@@ -1,0 +1,138 @@
+/* Barrera Alaniz Jose Angel */
+/* Fernández Flores Bruno Eduardo */
+/* Sanchez Mora Jose Alfredo */
+
+package practica4;
+
+import java_cup.runtime.*;
+parser code{:
+    @Override
+    public void syntax_error(Symbol s){
+        System.err.println("Error sintactico en ["+s.left+":"+(s.right-1)+"], token inesperado "+s.value);
+    }
+:}
+
+/*  Terminales Palabras Reservadas  */
+terminal    AUTO, BREAK, CASE, CHAR, CONST, CONTINUE, DEFAULT, DO, DOUBLE, ELSE,
+            ENUM, EXTERN, FLOAT, FOR, GOTO, IF, INLINE, INT, LONG, MAIN, REGISTER,
+            RESTRICT, RETURN, SHORT, SIGNED, SIZEOF, STATIC, STRUCT, SWITCH,
+            TYPEDEF, TYPEOF, TYPEOF_UNQUAL, UNION, UNSIGNED, VOID, VOLATILE,
+            WHILE, _Alignas, _Alignof, _Atomic, _Bool, _Complex, _Generic,
+            _Imaginary, _Noreturn, _Static_assert, _Thread_local
+            ;
+
+/* Terminales Directivas */
+terminal    DIRECTIVA_INCLUDE, DIRECTIVA_DEFINE, DIRECTIVA_IFDEF, 
+            DIRECTIVA_IFNDEF, DIRECTIVA_ELSE, DIRECTIVA_ENDIF
+            ;
+
+/* Terminales Caracteres de Formato */
+terminal    CFORMATO_INTEGER, CFORMATO_UNSIGNED, CFORMATO_FLOTANTE_DECIMAL,
+            CFORMATO_NOTACION_EXPONENCIAL, CFORMATO_GENERAL, CFORMATO_HEXADECIMAL,
+            CFORMATO_OCTAL, CFORMATO_STRING, CFORMATO_CHAR, CFORMATO_POINTER, 
+            CFORMATO_NUM_CARACTERES_PROCESADOS
+            ;
+
+/*  Terminales Operadores  */
+terminal    SUMA, RESTA, MULTIPLICACION, DIVISION, MODULO, IGUALDAD, DIFERENTE,
+            MENOR_QUE, MAYOR_QUE, MENOR_IGUAL, MAYOR_IGUAL, AND, OR, NOT,
+            ASIGNACION, SUMA_ASIGNACION, RESTA_ASIGNACION, MULT_ASIGNACION,
+            DIV_ASIGNACION, MOD_ASIGNACION, AND_BIT, OR_BIT, XOR_BIT, NOT_BIT,
+            DESPLAZA_IZQ, DESPLAZA_DER, INCREMENTO, DECREMENTO, CONDICIONAL,
+            DOS_PUNTOS, PUNTO, ACCESO_PUNTERO
+            ;
+
+/*  Terminales Simbolos  */
+terminal    PARENTESIS_IZQ, PARENTESIS_DER, CORCHETE_IZQ, CORCHETE_DER,
+            LLAVE_IZQ, LLAVE_DER, COMA, PUNTO_Y_COMA
+            ;
+
+/*  Terminales Expresiones Regulares  */
+terminal    FINDELINEA, ESPACIOS, COMENTARIOUNILINEA, COMENTARIOMULTILINEA,
+            IDENTIFICADOR, NUMHEXADECIMAL, NUMBINARIO, NUMOCTAL, NUMDECIMAL, 
+            NUMFLOTANTEDEC, NUMFLOTANTEHEX, CADENATEXTO, CADENACHAR
+            ;
+
+/*  NO TERMINALES  */
+non terminal    programa, declaraciones, dec_include, funcion_main, 
+                lista_tipo_dato, lista_tipo_flotante, lista_tipo_entero, 
+                lista_identificador, declaracion_variable, declaracion_constante
+                ;
+
+start with programa;
+
+programa::=         programa dec_include
+                |   dec_include funcion_main
+                ;
+
+dec_include::=  DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MAYOR_QUE
+                {:  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  :}
+                ;
+
+funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ declaraciones LLAVE_DER
+                {: System.out.println("[AS-MAIN] Esta es la funcion main"); :}
+                ;
+
+lista_tipo_entero::=    INT {:/*      System.out.println("[AS-DEC-TD] Esta es un tipo de dato int");*/:}
+                    |   SHORT {:/*    System.out.println("[AS-DEC-TD] Esta es un tipo de dato short");*/:}
+                    |   LONG {:/*     System.out.println("[AS-DEC-TD] Esta es un tipo de dato long");*/:}
+                    ;
+
+lista_tipo_flotante::=  FLOAT {:/*    System.out.println("[AS-DEC-TD] Esta es un tipo de dato float");    */:}
+                    |   DOUBLE {:/*   System.out.println("[AS-DEC-TD] Esta es un tipo de dato double");   */:}
+                    ;
+
+lista_tipo_dato::=      lista_tipo_entero
+                    |   lista_tipo_flotante
+                    |   CHAR {:/*     System.out.println("[AS-DEC-TD] Esta es un tipo de dato char");     */:}
+                    ;
+
+lista_identificador::=      lista_identificador COMA IDENTIFICADOR
+                        |   IDENTIFICADOR
+                        |   COMA error
+                        ;
+
+declaraciones::=    declaracion_variable declaraciones
+                |   declaracion_variable
+                |   declaracion_constante declaraciones
+                |   declaracion_constante
+                ;
+
+declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
+                {:  System.out.println("[AS-DEC-TD] Esta es una declaración de variables"); :}
+                |   lista_tipo_dato lista_identificador error
+                |   lista_tipo_dato error
+                ;
+
+declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDECIMAL PUNTO_Y_COMA
+                {:  System.out.println("[AS-DEC-CONST] Esta es una declaración de constante entero"); :}
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION NUMFLOTANTEDEC PUNTO_Y_COMA
+                {:  System.out.println("[AS-DEC-CONST] Esta es una declaración de constante flotante"); :}
+                |   CONST CHAR IDENTIFICADOR ASIGNACION CADENACHAR PUNTO_Y_COMA
+                {:  System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char"); :}
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION CADENATEXTO PUNTO_Y_COMA
+                {:  System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char*"); :}
+
+                |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDECIMAL error
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION NUMFLOTANTEDEC error
+                |   CONST CHAR IDENTIFICADOR ASIGNACION CADENACHAR error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION CADENATEXTO error
+
+                |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION error
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION error
+                |   CONST CHAR IDENTIFICADOR ASIGNACION error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION error
+
+                |   CONST lista_tipo_entero IDENTIFICADOR error
+                |   CONST lista_tipo_flotante IDENTIFICADOR error
+                |   CONST CHAR IDENTIFICADOR error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR error
+
+                |   CONST lista_tipo_entero error
+                |   CONST lista_tipo_flotante error
+                |   CONST CHAR error
+                |   CONST CHAR MULTIPLICACION error
+
+                |   CONST error
+
+                ;

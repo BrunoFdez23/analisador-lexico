@@ -1,0 +1,80 @@
+#include <stdio.h>
+
+int main(){
+    int hola, hola2;
+    char mundo;
+    double cuarenta_y_Cinco;
+    float flotante;
+    long largo;
+    short corto;
+
+    const int cuarenta = 40;
+    const char H = 'h';
+    const char* HOLA = "hola";
+    const double DOBLE = 123456789.987654321;
+    const float FLOTANTE = 36.5;
+    const long LARGO = 8000000000;
+    const short CORTO = 2025;
+
+    int hola = 10;
+    int hola hola2;
+    int hola, hola2
+    int case, hola2;
+    int hola, case;
+    char mundo mundo2;
+    char mundo, mundo2
+    char case, mundo2;
+    char mundo, case;
+    double cinco cinco2;
+    double cinco, cinco2
+    double case, cinco2;
+    double cinco, case;
+    float flotante flotante2;
+    float flotante, flotante2
+    float case, flotante2;
+    float flotante, case;
+    long largo largo2;
+    long largo, largo2
+    long case, largo2;
+    long largo, case;
+    short corto corto2;
+    short corto, corto2
+    short case, corto2;
+    short corto, case;
+
+    const int cuarenta = 40
+    const char H = 'h'
+    const char* HOLA = "hola"
+    const double DOBLE = 123456789.987654321
+    const float FLOTANTE = 36.5
+    const long LARGO = 8000000000
+    const short CORTO = 2025
+
+    const int cuarenta =;
+    const char H =;
+    const char* HOLA =;
+    const double DOBLE =;
+    const float FLOTANTE =;
+    const long LARGO = ;
+    const short CORTO = ;
+
+    const char* = "hola";
+    const char = 'h';
+    const int = 40;
+    const double = 123456789.987654321;
+    const float = 36.5;
+    const long = 8000000000;
+    const short = 2025;
+
+    const int cuarenta 40;
+    const char H 'h';
+    const char* HOLA "hola";
+    const double DOBLE 123456789.987654321;
+    const float FLOTANTE 36.5;
+    const long LARGO 8000000000;
+    const short CORTO 2025;
+
+
+    const cuarenta = 40;
+
+}

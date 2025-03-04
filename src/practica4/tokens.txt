@@ -1,0 +1,105 @@
+/*
+    Integrantes:
+    Barrera Alaniz Jose Angel
+    Fernández Flores Bruno Eduardo
+    Sanchez Mora Jose Alfredo
+*/
+
+//Hola Mundo
+/*Hola Mundo*/
+
+auto
+break
+case
+char
+const
+continue
+default
+do
+double
+else
+enum
+extern
+float
+for
+goto
+if
+inline
+int holaMundo1
+long
+register
+restrict
+return
+short
+signed
+sizeof
+static
+struct
+switch
+typedef
+typeof
+typeof_unqual
+union
+unsigned
+void
+volatile
+while
+_Alignas
+_Alignof
+_Atomic
+_Bool
+_Complex
+_Generic
+_Imaginary
+_Noreturn
+_Static_assert
+_Thread_local
+
++
+-
+*
+/
+%
+==
+!= < > <= >=
+&& || !
+= += -= *= /= %=
+& | ^ ~ << >>
+++ --
+? :
+. ->
+(
+) [ ] { } , ;
+
+123
+1.23123
+
+"Hola Mundo //"
+ 
+'h' 'o' 'l' 'a'
+holalalala
+
+%d %s %c %f
+#include
+#define
+#ifdef
+#ifndef
+#else
+#endif
+
+123variable variable! var#iable
+"Hola Mundo
+"Hola Mundo
+"Hola Mundo
+Hola"
+'a
+'ab' 'a '
+0xG123 0x12G3 
+0b102 
+089 
+12.34e 12.34.56 12.1eA3 12.1ee12
+
+@ $ #
+
+56 0x1AF2 007 0b1 0.22 0x1.1p1
+0x.pA 0x1.p 0x1.AF.2 0x1.1pK3 0x1.1pp12
