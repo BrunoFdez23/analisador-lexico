@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 int main(){
-    int hola, hola2;
+/*    int hola, hola2;
     char mundo;
     double cuarenta_y_Cinco;
     float flotante;
@@ -76,5 +76,16 @@ int main(){
 
 
     const cuarenta = 40;
+*/
+galon = x + y * 5;
+x1 = (a - b) / c;
+10 == 5 && 3 <= 4;
+x3 = (x + y) * (z - w);
+10 <= 5;
+x5 = c;
 
+galon = x + * y;
+x1 = (a - b;
+x2 = 5 / (2 + );
+10 <= ;
 }

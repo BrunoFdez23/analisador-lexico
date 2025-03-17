@@ -134,5 +134,4 @@ declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDEC
                 |   CONST CHAR MULTIPLICACION error
 
                 |   CONST error
-
                 ;

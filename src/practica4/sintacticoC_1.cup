@@ -56,7 +56,12 @@ terminal    FINDELINEA, ESPACIOS, COMENTARIOUNILINEA, COMENTARIOMULTILINEA,
 /*  NO TERMINALES  */
 non terminal    programa, declaraciones, dec_include, funcion_main, 
                 lista_tipo_dato, lista_tipo_flotante, lista_tipo_entero, 
-                lista_identificador, declaracion_variable, declaracion_constante
+                lista_identificador, declaracion_variable, declaracion_constante,
+                valores_validos_numero, valores_validos_texto, operadores_aritmeticos,
+                operadores_relacionales1, operadores_relacionales2, operadores_logicos,
+                operacion_aritmetica_simple, operacion_aritmetica, operacion_aritmetica_compuesta, 
+                operacion_relacional, operacion_logica, operaciones_validas1, 
+                operaciones_validas2, operaciones
                 ;
 
 start with programa;
@@ -69,7 +74,7 @@ dec_include::=  DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MA
                 {:  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  :}
                 ;
 
-funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ declaraciones LLAVE_DER
+funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ declaraciones operaciones LLAVE_DER
                 {: System.out.println("[AS-MAIN] Esta es la funcion main"); :}
                 ;
 
@@ -96,6 +101,10 @@ declaraciones::=    declaracion_variable declaraciones
                 |   declaracion_variable
                 |   declaracion_constante declaraciones
                 |   declaracion_constante
+                |   COMENTARIOMULTILINEA declaraciones
+                |   COMENTARIOUNILINEA declaraciones
+                |   COMENTARIOMULTILINEA
+                |   COMENTARIOUNILINEA
                 ;
 
 declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
@@ -134,4 +143,92 @@ declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDEC
                 |   CONST CHAR MULTIPLICACION error
 
                 |   CONST error
+
+                ;
+
+/* Operadores aritméticos */
+valores_validos_texto::=    CADENATEXTO
+                        |   CADENACHAR
+                        ;
+valores_validos_numero::= NUMDECIMAL
+                        | NUMFLOTANTEDEC
+                        ;
+valores_validos_identificador::= IDENTIFICADOR
+                                ;
+operadores_aritmeticos::= SUMA
+                        | RESTA
+                        | MULTIPLICACION
+                        | DIVISION
+                        | MODULO
+                        ;
+operadores_relacionales1::= IGUALDAD
+                        |   DIFERENTE
+                        ;
+operadores_relacionales2::= MAYOR_QUE
+                        |   MENOR_QUE
+                        |   MAYOR_IGUAL
+                        |   MENOR_IGUAL
+                        ;
+operadores_logicos::=       AND
+                        |   OR
+                        |   NOT
+                        ;
+operacion_aritmetica_simple::= valores_validos_numero
+                             | IDENTIFICADOR
+                             ;
+operacion_aritmetica::= operacion_aritmetica operadores_aritmeticos operacion_aritmetica_simple
+                      | operacion_aritmetica_simple 
+                      
+                      | operadores_aritmeticos error
+                      ;
+operacion_aritmetica_compuesta::=   PARENTESIS_IZQ operacion_aritmetica PARENTESIS_DER operadores_aritmeticos operacion_aritmetica_compuesta
+                                |   PARENTESIS_IZQ operacion_aritmetica PARENTESIS_DER
+                                |   operacion_aritmetica operacion_aritmetica_compuesta
+                                |   operacion_aritmetica
+
+                                |   PARENTESIS_IZQ operacion_aritmetica PARENTESIS_DER operadores_aritmeticos error
+                                |   PARENTESIS_IZQ operacion_aritmetica error
+                                |   PARENTESIS_IZQ error
+                                /*|   operacion_aritmetica error*/
+                                ;
+operacion_relacional::=     valores_validos_numero operadores_relacionales1 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales1 IDENTIFICADOR
+                        |   valores_validos_texto operadores_relacionales1 valores_validos_texto
+                        |   valores_validos_texto operadores_relacionales1 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales1 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_numero
+                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_texto
+
+                        |   valores_validos_numero operadores_relacionales2 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales2 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales2 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales2 valores_validos_numero
+
+                        |   valores_validos_numero operadores_relacionales1 error
+                        |   valores_validos_numero operadores_relacionales2 error
+                        |   valores_validos_texto operadores_relacionales1 error
+                        |   IDENTIFICADOR operadores_relacionales1 error
+                        |   IDENTIFICADOR operadores_relacionales2 error
+                        ;
+operacion_logica::=     operacion_relacional operadores_logicos operacion_relacional
+                    |   operacion_relacional operadores_logicos error
+                    |   operacion_relacional error
+                    ;
+operaciones_validas1::= IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta PUNTO_Y_COMA
+                    {:  System.out.println("[AS-OV-1] Esta es una operacion aritmetica"); :}
+                    |   IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta error
+                    |   IDENTIFICADOR ASIGNACION error
+                    |   IDENTIFICADOR error
+                    ;
+operaciones_validas2::= operacion_relacional PUNTO_Y_COMA
+                    {:  System.out.println("[AS-OV-2] Esta es una operacion relacional"); :}
+                    |   operacion_logica PUNTO_Y_COMA
+                    {:  System.out.println("[AS-OV-2] Esta es una operacion logica"); :}
+                    |   operacion_relacional error
+                    |   operacion_logica error
+                    ;
+operaciones::=      operaciones_validas1 operaciones
+                |   operaciones_validas2 operaciones
+                |   operaciones_validas1
+                |   operaciones_validas2
                 ;

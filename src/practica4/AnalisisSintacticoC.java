@@ -10,9 +10,8 @@ import java.io.Reader;
 import java_cup.runtime.*;
 
 /* Barrera Alaniz Jose Angel */
-/* Fernández Flores Bruno Eduardo */
-/* Sanchez Mora Jose Alfredo */
-
+ /* Fernández Flores Bruno Eduardo */
+ /* Sanchez Mora Jose Alfredo */
 public class AnalisisSintacticoC {
 
     /**
@@ -23,7 +22,7 @@ public class AnalisisSintacticoC {
         try {
             Reader lector = new BufferedReader(new FileReader("src/practica4/ejemplo_sintactico.txt"));
             ParserC s = new ParserC(new LexerC(lector));
-            
+
             // String contenido= "byte numero1;";
             // JavaSintactico s = new JavaSintactico(new JavaLexico(new StringReader(contenido)));
             System.out.println(s.parse());
@@ -35,5 +34,5 @@ public class AnalisisSintacticoC {
             System.out.println(ex.getMessage());
         }
     }
-    
+
 }
