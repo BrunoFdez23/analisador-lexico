@@ -104,7 +104,7 @@ declaraciones::=    declaracion_variable declaraciones
                 |   COMENTARIOMULTILINEA declaraciones
                 |   COMENTARIOUNILINEA declaraciones
                 |   COMENTARIOMULTILINEA
-                |   COMENTARIOUNILINEA
+                |   COMENTARIOUNILINEA 
                 ;
 
 declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
@@ -152,9 +152,9 @@ valores_validos_texto::=    CADENATEXTO
                         ;
 valores_validos_numero::= NUMDECIMAL
                         | NUMFLOTANTEDEC
-                        ;
+                        ;/*
 valores_validos_identificador::= IDENTIFICADOR
-                                ;
+                                ;*/
 operadores_aritmeticos::= SUMA
                         | RESTA
                         | MULTIPLICACION
@@ -216,19 +216,20 @@ operacion_logica::=     operacion_relacional operadores_logicos operacion_relaci
                     ;
 operaciones_validas1::= IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta PUNTO_Y_COMA
                     {:  System.out.println("[AS-OV-1] Esta es una operacion aritmetica"); :}
+
                     |   IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta error
                     |   IDENTIFICADOR ASIGNACION error
                     |   IDENTIFICADOR error
                     ;
-operaciones_validas2::= operacion_relacional PUNTO_Y_COMA
+operaciones_validas2::= operacion_relacional
                     {:  System.out.println("[AS-OV-2] Esta es una operacion relacional"); :}
-                    |   operacion_logica PUNTO_Y_COMA
+                    |   operacion_logica
                     {:  System.out.println("[AS-OV-2] Esta es una operacion logica"); :}
-                    |   operacion_relacional error
-                    |   operacion_logica error
+                    /*|   operacion_relacional error
+                    |   operacion_logica error*/
                     ;
 operaciones::=      operaciones_validas1 operaciones
                 |   operaciones_validas2 operaciones
                 |   operaciones_validas1
                 |   operaciones_validas2
-                ;
+;

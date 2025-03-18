@@ -61,9 +61,10 @@ non terminal    programa, declaraciones, dec_include, funcion_main,
                 operadores_relacionales1, operadores_relacionales2, operadores_logicos,
                 operacion_aritmetica_simple, operacion_aritmetica, operacion_aritmetica_compuesta, 
                 operacion_relacional, operacion_logica, operaciones_validas1, 
-                operaciones_validas2, operaciones
+                operaciones_validas2, operaciones, estructura_control, sentencia_if, 
+                sentencia_while, sentencia_for, bloque, sentencia, inicializacion, 
+                actualizacion, expresion
                 ;
-
 start with programa;
 
 programa::=         programa dec_include
@@ -74,7 +75,7 @@ dec_include::=  DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MA
                 {:  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  :}
                 ;
 
-funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ declaraciones operaciones LLAVE_DER
+funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
                 {: System.out.println("[AS-MAIN] Esta es la funcion main"); :}
                 ;
 
@@ -101,10 +102,6 @@ declaraciones::=    declaracion_variable declaraciones
                 |   declaracion_variable
                 |   declaracion_constante declaraciones
                 |   declaracion_constante
-                |   COMENTARIOMULTILINEA declaraciones
-                |   COMENTARIOUNILINEA declaraciones
-                |   COMENTARIOMULTILINEA
-                |   COMENTARIOUNILINEA 
                 ;
 
 declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
@@ -212,12 +209,11 @@ operacion_relacional::=     valores_validos_numero operadores_relacionales1 valo
                         ;
 operacion_logica::=     operacion_relacional operadores_logicos operacion_relacional
                     |   operacion_relacional operadores_logicos error
-                    |   operacion_relacional error
                     ;
-operaciones_validas1::= IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta PUNTO_Y_COMA
+operaciones_validas1::= IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta
                     {:  System.out.println("[AS-OV-1] Esta es una operacion aritmetica"); :}
-
-                    |   IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta error
+/*
+                    |   IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta error*/
                     |   IDENTIFICADOR ASIGNACION error
                     |   IDENTIFICADOR error
                     ;
@@ -232,4 +228,68 @@ operaciones::=      operaciones_validas1 operaciones
                 |   operaciones_validas2 operaciones
                 |   operaciones_validas1
                 |   operaciones_validas2
-;
+                ;
+
+/*  Estructuras de control IF WHILE FOR */
+
+estructura_control::=   sentencia_if 
+                    |   sentencia_while 
+                    |   sentencia_for
+                    ;
+sentencia_if::=     IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER 
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-IF] Esta es una estructura de control IF"); :}
+
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE LLAVE_IZQ bloque error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE LLAVE_IZQ error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER error
+                |   IF PARENTESIS_IZQ operacion_relacional error
+                |   IF PARENTESIS_IZQ error
+                |   IF error
+                ;
+sentencia_while::=  WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-WHILE] Esta es una estructura de control WHILE"); :}
+                
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque error
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ error
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER error
+                |   WHILE PARENTESIS_IZQ operacion_relacional error
+                |   WHILE PARENTESIS_IZQ error
+                |   WHILE error
+                ;
+sentencia_for::=    FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-FOR] Esta es una estructura de control FOR"); :}
+                
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ bloque error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA error
+                |   FOR PARENTESIS_IZQ inicializacion error
+                |   FOR PARENTESIS_IZQ error
+                |   FOR error
+                ;
+bloque::=   sentencia bloque
+        |   sentencia
+        |   COMENTARIOMULTILINEA bloque
+        |   COMENTARIOUNILINEA bloque
+        |   COMENTARIOMULTILINEA
+        |   COMENTARIOUNILINEA 
+        ;
+
+sentencia::=    operaciones_validas1 PUNTO_Y_COMA
+            |   estructura_control
+            |   declaracion_variable
+            |   declaracion_constante
+            |   operaciones_validas2
+
+            |   operaciones_validas1 error
+            ;
+inicializacion::=   lista_tipo_entero operaciones_validas1 
+                |   lista_tipo_entero error
+                ;

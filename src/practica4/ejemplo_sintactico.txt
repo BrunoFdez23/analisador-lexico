@@ -77,15 +77,25 @@ int main(){
 
     const cuarenta = 40;
 */
+/*
+x = + x
+galon = x + * y
+x1 = (a - b
+x2 = 5 / (2 + )*/
+10 <= 
+
+
 galon = x + y * 5;
 x1 = (a - b) / c;
-10 == 5 && 3 <= 4;
 x3 = (x + y) * (z - w);
-10 <= 5;
-x5 = c;
+10 == 5 && 3 <= 4
+10 <= 5
 
-galon = x + * y;
-x1 = (a - b;
-x2 = 5 / (2 + );
-10 <= ;
+if (x > 0) { x = x + 1; } else { x = x - 1; }
+while (y < 10) { y = y + 1; }
+for (int i = 0; i < 10; i = i + 1) { suma = suma + i; }
+
+if (x > 0 { x = x + 1; }
+while x < 10) { y = y + 1; }
+for i = 0; i < 10 i = i + 1) { suma = suma + i; }
 }
