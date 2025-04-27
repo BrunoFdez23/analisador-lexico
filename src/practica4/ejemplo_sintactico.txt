@@ -1,101 +1,15 @@
 #include <stdio.h>
+#include <stdiu.h>
+#include <stdia.h>
 
 int main(){
-/*    int hola, hola2;
-    char mundo;
-    double cuarenta_y_Cinco;
-    float flotante;
-    long largo;
-    short corto;
-
-    const int cuarenta = 40;
-    const char H = 'h';
-    const char* HOLA = "hola";
-    const double DOBLE = 123456789.987654321;
-    const float FLOTANTE = 36.5;
-    const long LARGO = 8000000000;
-    const short CORTO = 2025;
-
-    int hola = 10;
-    int hola hola2;
-    int hola, hola2
-    int case, hola2;
-    int hola, case;
-    char mundo mundo2;
-    char mundo, mundo2
-    char case, mundo2;
-    char mundo, case;
-    double cinco cinco2;
-    double cinco, cinco2
-    double case, cinco2;
-    double cinco, case;
-    float flotante flotante2;
-    float flotante, flotante2
-    float case, flotante2;
-    float flotante, case;
-    long largo largo2;
-    long largo, largo2
-    long case, largo2;
-    long largo, case;
-    short corto corto2;
-    short corto, corto2
-    short case, corto2;
-    short corto, case;
-
-    const int cuarenta = 40
-    const char H = 'h'
-    const char* HOLA = "hola"
-    const double DOBLE = 123456789.987654321
-    const float FLOTANTE = 36.5
-    const long LARGO = 8000000000
-    const short CORTO = 2025
-
-    const int cuarenta =;
-    const char H =;
-    const char* HOLA =;
-    const double DOBLE =;
-    const float FLOTANTE =;
-    const long LARGO = ;
-    const short CORTO = ;
-
-    const char* = "hola";
-    const char = 'h';
-    const int = 40;
-    const double = 123456789.987654321;
-    const float = 36.5;
-    const long = 8000000000;
-    const short = 2025;
-
-    const int cuarenta 40;
-    const char H 'h';
-    const char* HOLA "hola";
-    const double DOBLE 123456789.987654321;
-    const float FLOTANTE 36.5;
-    const long LARGO 8000000000;
-    const short CORTO 2025;
-
-
-    const cuarenta = 40;
-*/
-/*
-x = + x
-galon = x + * y
-x1 = (a - b
-x2 = 5 / (2 + )*/
-10 <= 
-
-
-galon = x + y * 5;
-x1 = (a - b) / c;
-x3 = (x + y) * (z - w);
-10 == 5 && 3 <= 4
-10 <= 5
-
-if (x > 0) { x = x + 1; } else { x = x - 1; }
-while (y < 10) { y = y + 1; }
-for (int i = 0; i < 10; i = i + 1) { suma = suma + i; }
-
-if (x > 0 { x = x + 1; }
-while x < 10) { y = y + 1; }
-for i = 0; i < 10 i = i + 1) { suma = suma + i; }
+    const int a = 10;
+    int suma;        // Válido
+    suma = a + 5 - 2;
+    float b;
+    b = a;        // Error: Asignación de int a float
+    c = 10;       // Error: Identificador no declarado
+    const char* d = "Hola";
+    //d = "Hola";
+return 0;
 }

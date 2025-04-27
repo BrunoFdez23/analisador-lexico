@@ -3,19 +3,12 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/tokens.txt</file>
+            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/sintacticoC_4.cup</file>
+            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/SimboloC.java</file>
             <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/AnalisisSintacticoC.java</file>
             <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/GeneradorCupParser.java</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/LexerC.java</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/AnalisisLexicoC.java</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/sym.java</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/sintacticoC_1.cup</file>
             <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/ParserC.java</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/lexico.jflex</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/GeneradorFlexLexico.java</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica2/AnalisisLexicoC.java</file>
             <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/ejemplo_sintactico.txt</file>
-            <file>file:/C:/Users/ggosi/Documents/NetBeansProjects/C/src/practica4/sintacticoC.cup</file>
         </group>
     </open-files>
 </project-private>

@@ -1,0 +1,519 @@
+/* Barrera Alaniz Jose Angel */
+/* Fernández Flores Bruno Eduardo */
+/* Sanchez Mora Jose Alfredo */
+
+package practica4;
+
+import java_cup.runtime.*;
+
+parser code{:
+    public static TablaSimbolosC tabla = new TablaSimbolosC();
+    public static SimboloC simbolo;
+    public static String tipoDato = "";
+    public static String resultado = "";
+    public static String resultadoParcial = "";
+    public static String tipoActual = "";
+    public static boolean booltexto = false;
+    public static boolean boolchar = false;
+    public static boolean boolint = false;
+    public static boolean boolfloat = false;
+
+    
+    public static boolean esCompatible(boolean booltexto, boolean boolchar, boolean boolint, boolean boolfloat){
+        int count = 0;
+        if(booltexto){ count = count+1;}
+        if(boolchar){ count = count+1;}
+        if(boolint){ count = count+1;}
+        if(boolfloat){ count = count+1;}
+
+        if(count != 1){
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
+    @Override
+    public void syntax_error(Symbol s){
+        System.err.println("Error sintactico en ["+s.left+":"+(s.right-1)+"], token inesperado "+s.value);
+    }
+:}
+
+/*  Terminales Palabras Reservadas  */
+terminal    AUTO, BREAK, CASE, CHAR, CONST, CONTINUE, DEFAULT, DO, DOUBLE, ELSE,
+            ENUM, EXTERN, FLOAT, FOR, GOTO, IF, INLINE, INT, LONG, MAIN, REGISTER,
+            RESTRICT, RETURN, SHORT, SIGNED, SIZEOF, STATIC, STRUCT, SWITCH,
+            TYPEDEF, TYPEOF, TYPEOF_UNQUAL, UNION, UNSIGNED, VOID, VOLATILE,
+            WHILE, _Alignas, _Alignof, _Atomic, _Bool, _Complex, _Generic,
+            _Imaginary, _Noreturn, _Static_assert, _Thread_local
+            ;
+
+/* Terminales Directivas */
+terminal    DIRECTIVA_INCLUDE, DIRECTIVA_DEFINE, DIRECTIVA_IFDEF, 
+            DIRECTIVA_IFNDEF, DIRECTIVA_ELSE, DIRECTIVA_ENDIF
+            ;
+
+/* Terminales Caracteres de Formato */
+terminal    CFORMATO_INTEGER, CFORMATO_UNSIGNED, CFORMATO_FLOTANTE_DECIMAL,
+            CFORMATO_NOTACION_EXPONENCIAL, CFORMATO_GENERAL, CFORMATO_HEXADECIMAL,
+            CFORMATO_OCTAL, CFORMATO_STRING, CFORMATO_CHAR, CFORMATO_POINTER, 
+            CFORMATO_NUM_CARACTERES_PROCESADOS
+            ;
+
+/*  Terminales Operadores  */
+terminal    SUMA, RESTA, MULTIPLICACION, DIVISION, MODULO, IGUALDAD, DIFERENTE,
+            MENOR_QUE, MAYOR_QUE, MENOR_IGUAL, MAYOR_IGUAL, AND, OR, NOT,
+            ASIGNACION, SUMA_ASIGNACION, RESTA_ASIGNACION, MULT_ASIGNACION,
+            DIV_ASIGNACION, MOD_ASIGNACION, AND_BIT, OR_BIT, XOR_BIT, NOT_BIT,
+            DESPLAZA_IZQ, DESPLAZA_DER, INCREMENTO, DECREMENTO, CONDICIONAL,
+            DOS_PUNTOS, PUNTO, ACCESO_PUNTERO
+            ;
+
+/*  Terminales Simbolos  */
+terminal    PARENTESIS_IZQ, PARENTESIS_DER, CORCHETE_IZQ, CORCHETE_DER,
+            LLAVE_IZQ, LLAVE_DER, COMA, PUNTO_Y_COMA
+            ;
+
+/*  Terminales Expresiones Regulares  */
+terminal    FINDELINEA, ESPACIOS, COMENTARIOUNILINEA, COMENTARIOMULTILINEA,
+            NUMHEXADECIMAL, NUMBINARIO, NUMOCTAL, NUMFLOTANTEHEX
+            ;
+terminal String     IDENTIFICADOR, CADENATEXTO, CADENACHAR, NUMDECIMAL, NUMFLOTANTEDEC;/*
+terminal Character  CADENACHAR;
+terminal Integer    NUMDECIMAL;
+terminal Float      NUMFLOTANTEDEC;*/
+
+
+/*  NO TERMINALES  */
+non terminal    programa, declaraciones, dec_include, dec_funciones, funcion_main, 
+                lista_tipo_dato, lista_tipo_flotante, lista_tipo_entero, parametros, parametro,
+                lista_identificador, declaracion_variable, declaracion_constante,
+                valores_validos_numero, valores_validos_texto, operadores_aritmeticos,
+                operadores_relacionales1, operadores_relacionales2, operadores_logicos,
+                operacion_aritmetica_simple, operacion_aritmetica, operacion_aritmetica_compuesta, 
+                operacion_relacional, operacion_logica, operaciones_validas1, 
+                operaciones_validas2, operaciones, estructura_control, sentencia_if, 
+                sentencia_while, sentencia_for, bloque, sentencia, inicializacion, 
+                actualizacion, expresion
+                ;
+start with programa;
+
+programa::=         dec_include funcion_main
+                |   dec_include dec_funciones funcion_main
+                ;
+
+dec_include::=      DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MAYOR_QUE dec_include
+                    {:  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  :}
+                |   DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MAYOR_QUE
+                    {:  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  :}
+                ;
+
+parametros::=       parametros COMA parametro  
+                |   parametros COMA error
+                |   parametro
+                ;
+
+parametro::=    lista_tipo_dato IDENTIFICADOR
+            ;
+
+dec_funciones::=    dec_funciones lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); :}
+                |   dec_funciones lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); :}
+                |   dec_funciones VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); :}
+                |   dec_funciones VOID IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); :}
+
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); :}
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); :}
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); :}
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {: System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); :}
+
+/* ERRORES  */
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ error
+                |   lista_tipo_dato IDENTIFICADOR error
+                |   lista_tipo_dato error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ error
+                |   VOID IDENTIFICADOR error
+                |   VOID error
+                ;
+
+funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque RETURN NUMDECIMAL PUNTO_Y_COMA LLAVE_DER
+                {: System.out.println("[AS-MAIN] Esta es la funcion main"); :}
+                ;
+
+lista_tipo_entero::=    INT {:  parser.tipoDato = "int";   :}
+                    |   SHORT {:  parser.tipoDato = "int";   :}
+                    |   LONG {:  parser.tipoDato = "int";   :}
+                    ;
+
+lista_tipo_flotante::=  FLOAT {:  parser.tipoDato = "float";   :}
+                    |   DOUBLE {:  parser.tipoDato = "float";   :}
+                    ;
+
+lista_tipo_dato::=      lista_tipo_entero
+                    |   lista_tipo_flotante
+                    |   CHAR {:  parser.tipoDato = "char";   :}
+                    ;
+
+lista_identificador::=      lista_identificador COMA IDENTIFICADOR
+                        |   IDENTIFICADOR:id
+                        {:
+                            parser.simbolo = new SimboloC(id, parser.tipoDato, "0","metodo",false);
+                            if(parser.tabla.agregar(id, parser.simbolo)){
+                                System.out.println("Variable agregada "+id);
+                                System.out.println(parser.tabla.mostrar());
+                            } else {
+                                System.out.println("Variable NO agregada "+id);
+                            }  
+                        :}
+
+                        |   COMA error
+                        ;
+
+declaraciones::=    declaracion_variable declaraciones
+                |   declaracion_variable
+                |   declaracion_constante declaraciones
+                |   declaracion_constante
+                ;
+
+declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
+                {:  
+                    parser.tipoDato = "";
+                    parser.resultado = ""; 
+                    parser.tipoActual = "";
+                    parser.booltexto = false; 
+                    parser.boolchar = false; 
+                    parser.boolint = false; 
+                    parser.boolfloat = false;
+                    System.out.println("[AS-DEC-TD] Esta es una declaración de variables");
+                :}
+                |   lista_tipo_dato lista_identificador error
+                |   lista_tipo_dato error
+                ;
+
+declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION NUMDECIMAL:numdec PUNTO_Y_COMA
+                {:  
+                    parser.simbolo = new SimboloC(id, parser.tipoDato,""+numdec,"metodo",true);
+                    if(parser.tabla.agregar(id, parser.simbolo)){
+                        System.out.println("Constante agregada "+id);
+                                System.out.println(parser.tabla.mostrar());
+                    } else {
+                        System.out.println("Constante NO agregada "+id);
+                    }  
+                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante entero"); 
+                :}
+
+                |   CONST lista_tipo_flotante IDENTIFICADOR:id ASIGNACION NUMFLOTANTEDEC:numfloatdec PUNTO_Y_COMA
+                {:  
+                    parser.simbolo = new SimboloC(id, parser.tipoDato, ""+numfloatdec,"metodo",true);
+                    if(parser.tabla.agregar(id, parser.simbolo)){
+                        System.out.println("Constante agregada "+id);
+                                System.out.println(parser.tabla.mostrar());
+                    } else {
+                        System.out.println("Constante NO agregada "+id);
+                    }  
+                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante flotante"); 
+                :}
+
+                |   CONST CHAR IDENTIFICADOR:id ASIGNACION CADENACHAR:cchar PUNTO_Y_COMA
+                {:  
+                    /*String charValue = String.valueOf(((Character) cchar).charValue());*/
+                    parser.simbolo = new SimboloC(id, "char", cchar,"metodo",true);
+                    if(parser.tabla.agregar(id, parser.simbolo)){
+                        System.out.println("Constante agregada "+id);
+                                System.out.println(parser.tabla.mostrar());
+                    } else {
+                        System.out.println("Constante NO agregada "+id);
+                    }  
+                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char"); 
+                :}
+
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR:id ASIGNACION CADENATEXTO:texto PUNTO_Y_COMA
+                {:  
+                    parser.simbolo = new SimboloC(id, "char*", texto,"metodo",true);
+                    if(parser.tabla.agregar(id, parser.simbolo)){
+                        System.out.println("Constante agregada "+id);
+                                System.out.println(parser.tabla.mostrar());
+                    } else {
+                        System.out.println("Constante NO agregada "+id);
+                    }  
+                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char*"); 
+                :}
+
+                |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDECIMAL error
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION NUMFLOTANTEDEC error
+                |   CONST CHAR IDENTIFICADOR ASIGNACION CADENACHAR error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION CADENATEXTO error
+
+                |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION error
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION error
+                |   CONST CHAR IDENTIFICADOR ASIGNACION error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION error
+
+                |   CONST lista_tipo_entero IDENTIFICADOR error
+                |   CONST lista_tipo_flotante IDENTIFICADOR error
+                |   CONST CHAR IDENTIFICADOR error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR error
+
+                |   CONST lista_tipo_entero error
+                |   CONST lista_tipo_flotante error
+                |   CONST CHAR error
+                |   CONST CHAR MULTIPLICACION error
+
+                |   CONST error
+
+                ;
+
+/* Operadores aritméticos */
+valores_validos_texto::=    CADENATEXTO:ctexto 
+                        {:  parser.resultado = parser.resultado+""+ctexto;      
+                            parser.booltexto = true;
+                        :}
+                        |   CADENACHAR:cchar  
+                        {:  parser.resultado = parser.resultado+""+cchar;      
+                            parser.boolchar = true;
+                       :}
+                        ;
+valores_validos_numero::= NUMDECIMAL:numdec    
+                        {:  parser.resultado = parser.resultado+""+numdec;      
+                            parser.boolint = true;
+                        :}
+                        | NUMFLOTANTEDEC:numfloatdec    
+                        {:  parser.resultado = parser.resultado+""+numfloatdec;      
+                            parser.boolfloat = true;
+                        :}
+                        ;
+operadores_aritmeticos::= SUMA:suma         {:  parser.resultado = parser.resultado+""+suma;   :}
+                        | RESTA:resta       {:  parser.resultado = parser.resultado+""+resta;   :}
+                        | MULTIPLICACION:producto    {:  parser.resultado = parser.resultado+""+producto;   :}
+                        | DIVISION:division {:  parser.resultado = parser.resultado+""+division;   :}
+                        | MODULO:modulo     {:  parser.resultado = parser.resultado+""+modulo;   :}
+                        ;
+operadores_relacionales1::= IGUALDAD
+                        |   DIFERENTE
+                        ;
+operadores_relacionales2::= MAYOR_QUE
+                        |   MENOR_QUE
+                        |   MAYOR_IGUAL
+                        |   MENOR_IGUAL
+                        ;
+operadores_logicos::=       AND
+                        |   OR
+                        |   NOT
+                        ;
+operacion_aritmetica_simple::= valores_validos_numero
+                             | valores_validos_texto
+                             | IDENTIFICADOR:id    
+                            {:  parser.resultado = parser.resultado+""+id;
+                                SimboloC simboloComparacion = parser.tabla.obtenerSimbolo(id);
+                                switch (simboloComparacion.getTipo()){
+                                    case "char*":
+                                        parser.booltexto = true;
+                                        break;
+                                    case "char":
+                                        parser.boolchar = true;
+                                        break;
+                                    case "int":
+                                        parser.boolint = true;
+                                        break;
+                                    case "float":
+                                        parser.boolfloat = true;
+                                        break;
+                                    default:
+                                        parser.booltexto = true;
+                                        parser.boolchar = true;
+                                        parser.boolint = true;
+                                        parser.boolfloat = true;
+                                        System.err.println("[SCASE-ERROR] Nos topamos con un identicador que tiene un tipo de dato desconocido.");
+                                        break;
+                                }
+                            :}
+                             ;
+operacion_aritmetica::= operacion_aritmetica operadores_aritmeticos operacion_aritmetica_simple
+                    | operacion_aritmetica_simple
+                    | operadores_aritmeticos error
+                    ;
+
+operacion_aritmetica_compuesta::=   PARENTESIS_IZQ operacion_aritmetica PARENTESIS_DER operadores_aritmeticos operacion_aritmetica_compuesta
+                                |   PARENTESIS_IZQ operacion_aritmetica PARENTESIS_DER
+                                |   operacion_aritmetica operacion_aritmetica_compuesta
+                                |   operacion_aritmetica
+
+                                |   PARENTESIS_IZQ operacion_aritmetica PARENTESIS_DER operadores_aritmeticos error
+                                |   PARENTESIS_IZQ operacion_aritmetica error
+                                |   PARENTESIS_IZQ error
+                                /*|   operacion_aritmetica error*/
+                                ;
+operacion_relacional::=     valores_validos_numero operadores_relacionales1 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales1 IDENTIFICADOR
+                        |   valores_validos_texto operadores_relacionales1 valores_validos_texto
+                        |   valores_validos_texto operadores_relacionales1 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales1 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_numero
+                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_texto
+
+                        |   valores_validos_numero operadores_relacionales2 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales2 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales2 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales2 valores_validos_numero
+
+                        |   valores_validos_numero operadores_relacionales1 error
+                        |   valores_validos_numero operadores_relacionales2 error
+                        |   valores_validos_texto operadores_relacionales1 error
+                        |   IDENTIFICADOR operadores_relacionales1 error
+                        |   IDENTIFICADOR operadores_relacionales2 error
+                        ;
+operacion_logica::=     operacion_relacional operadores_logicos operacion_relacional
+                    |   operacion_relacional operadores_logicos error
+                    ;
+operaciones_validas1::= IDENTIFICADOR:id ASIGNACION operacion_aritmetica_compuesta:exp
+                    {:  
+                        SimboloC simbolo = parser.tabla.obtenerSimbolo(id);
+                        if (simbolo != null) {                                  /*Simbolo no declarado*/
+                            parser.tipoActual = simbolo.getTipo();
+                            switch (parser.tipoActual){
+                                case "char*":
+                                    parser.booltexto = true;
+                                    break;
+                                case "char":
+                                    parser.boolchar = true;
+                                    break;
+                                case "int":
+                                    parser.boolint = true;
+                                    break;
+                                case "float":
+                                    parser.boolfloat = true;
+                                    break;
+                                default:
+                                    parser.booltexto = true;
+                                    parser.boolchar = true;
+                                    parser.boolint = true;
+                                    parser.boolfloat = true;
+                                    System.err.println("[SCASE-ERROR] El identicador que tiene un tipo de dato desconocido.");
+                                    break;
+                            }
+                            if(!simbolo.isConstante()){                         /*Simbolo es constante*/
+                                if(parser.esCompatible(parser.booltexto,parser.boolchar,parser.boolint,parser.boolfloat)){                         /*Tipo de dato distinto*/
+                                    parser.simbolo = new SimboloC(id, parser.tipoDato, parser.resultado,"metodo",false);
+                                    if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
+                                        System.out.println("Identificador actualizado "+id);
+                                        System.out.println(parser.tabla.mostrar());
+                                    } else {
+                                        System.out.println("Identificador NO actualizado "+id);
+                                    }  
+                                } else{
+                                    System.err.println("[ASEM-ERROR] '"+id+"' espera tipos de dato "+parser.tipoActual);
+                                }
+                            } else {
+                                System.err.println("[ASEM-ERROR] No puedes modificar el valor de una constante.");
+                            }
+                        } else {
+                            System.err.println("[ASEM-ERROR] El identifiador '"+id+"' no fue declarado.");
+                        }
+                        System.out.println("[AS-OV-1] Esta es una operacion aritmetica");
+                        
+                        parser.resultado = "";
+                        parser.tipoActual = ""; 
+                        parser.booltexto = false; 
+                        parser.boolchar = false; 
+                        parser.boolint = false; 
+                        parser.boolfloat = false; 
+                    :}
+/*
+                    |   IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta error*/
+                    |   IDENTIFICADOR ASIGNACION error
+                    |   IDENTIFICADOR error
+                    ;
+operaciones_validas2::= operacion_relacional
+                    {:  System.out.println("[AS-OV-2] Esta es una operacion relacional"); :}
+                    |   operacion_logica
+                    {:  System.out.println("[AS-OV-2] Esta es una operacion logica"); :}
+                    /*|   operacion_relacional error
+                    |   operacion_logica error*/
+                    ;
+operaciones::=      operaciones_validas1 operaciones
+                |   operaciones_validas2 operaciones
+                |   operaciones_validas1
+                |   operaciones_validas2
+                ;
+
+/*  Estructuras de control IF WHILE FOR */
+
+estructura_control::=   sentencia_if 
+                    |   sentencia_while 
+                    |   sentencia_for
+                    ;
+sentencia_if::=     IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER 
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-IF] Esta es una estructura de control IF"); :}
+
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE LLAVE_IZQ bloque error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE LLAVE_IZQ error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER ELSE error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ error
+                |   IF PARENTESIS_IZQ operacion_relacional PARENTESIS_DER error
+                |   IF PARENTESIS_IZQ operacion_relacional error
+                |   IF PARENTESIS_IZQ error
+                |   IF error
+                ;
+sentencia_while::=  WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-WHILE] Esta es una estructura de control WHILE"); :}
+                
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque error
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ error
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER error
+                |   WHILE PARENTESIS_IZQ operacion_relacional error
+                |   WHILE PARENTESIS_IZQ error
+                |   WHILE error
+                ;
+sentencia_for::=    FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-FOR] Esta es una estructura de control FOR"); :}
+                
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ bloque error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA error
+                |   FOR PARENTESIS_IZQ inicializacion error
+                |   FOR PARENTESIS_IZQ error
+                |   FOR error
+                ;
+bloque::=   sentencia bloque
+        |   sentencia
+        |   COMENTARIOMULTILINEA bloque
+        |   COMENTARIOUNILINEA bloque
+        |   COMENTARIOMULTILINEA
+        |   COMENTARIOUNILINEA 
+        ;
+
+sentencia::=    operaciones_validas1 PUNTO_Y_COMA
+            |   estructura_control
+            |   declaracion_variable
+            |   declaracion_constante
+            |   operaciones_validas2
+
+            |   operaciones_validas1 error
+            ;
+inicializacion::=   lista_tipo_entero operaciones_validas1 
+                |   lista_tipo_entero error
+                ;
