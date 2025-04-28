@@ -3,8 +3,11 @@
 #include <stdia.h>
 
 int main(){
-    int resultadoComplejo;
-    resultadoComplejo = (10 + 20) * (30 - 15);
+    int resultadoComplejoInt;
+    resultadoComplejoInt = (10 + 20) * (30 - 15);
+    resultadoComplejoInt == 450
+    float resultadoComplejoFloat;
+    resultadoComplejoFloat = (10.25 + 20.75) * (30.0 - 15.0);
     const int a = 10;
     int suma;        // Válido
     suma = (a + 5) - (2);

@@ -6,6 +6,7 @@ package practica4;
 
 import java_cup.runtime.*;
 import java.util.Stack;
+import practica4.Calculadora;
 
 parser code{:
     public static TablaSimbolosC tabla = new TablaSimbolosC();
@@ -184,10 +185,10 @@ lista_identificador::=      lista_identificador COMA IDENTIFICADOR
                         {:
                             parser.simbolo = new SimboloC(id, parser.tipoDato, "0","metodo",false);
                             if(parser.tabla.agregar(id, parser.simbolo)){
-                                System.out.println("Variable agregada "+id);
+                                System.out.println("[AGREGAR]Variable agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
                             } else {
-                                System.out.println("Variable NO agregada "+id);
+                                System.out.println("[AGREGAR-ERR]Variable NO agregada '"+id+"'");
                             }  
                         :}
 
@@ -219,10 +220,10 @@ declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION NUM
                 {:  
                     parser.simbolo = new SimboloC(id, parser.tipoDato,""+numdec,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
-                        System.out.println("Constante agregada "+id);
+                        System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
                     } else {
-                        System.out.println("Constante NO agregada "+id);
+                        System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
                     /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante entero"); */
                 :}
@@ -231,12 +232,12 @@ declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION NUM
                 {:  
                     parser.simbolo = new SimboloC(id, parser.tipoDato, ""+numfloatdec,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
-                        System.out.println("Constante agregada "+id);
+                        System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
                     } else {
-                        System.out.println("Constante NO agregada "+id);
+                        System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
-                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante flotante"); 
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante flotante"); */
                 :}
 
                 |   CONST CHAR IDENTIFICADOR:id ASIGNACION CADENACHAR:cchar PUNTO_Y_COMA
@@ -244,24 +245,24 @@ declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION NUM
                     /*String charValue = String.valueOf(((Character) cchar).charValue());*/
                     parser.simbolo = new SimboloC(id, "char", cchar,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
-                        System.out.println("Constante agregada "+id);
+                        System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
                     } else {
-                        System.out.println("Constante NO agregada "+id);
+                        System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
-                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char"); 
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char"); */
                 :}
 
                 |   CONST CHAR MULTIPLICACION IDENTIFICADOR:id ASIGNACION CADENATEXTO:texto PUNTO_Y_COMA
                 {:  
                     parser.simbolo = new SimboloC(id, "char*", texto,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
-                        System.out.println("Constante agregada "+id);
+                        System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
                     } else {
-                        System.out.println("Constante NO agregada "+id);
+                        System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
-                    System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char*"); 
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char*"); */
                 :}
 
                 |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDECIMAL error
@@ -326,24 +327,12 @@ operadores_aritmeticos::= SUMA:suma         {:  /*parser.resultado = parser.resu
                                                 parser.stack.peek().append(modulo); 
                                             :}
                         ;
-operadores_relacionales1::= IGUALDAD
-                        |   DIFERENTE
-                        ;
-operadores_relacionales2::= MAYOR_QUE
-                        |   MENOR_QUE
-                        |   MAYOR_IGUAL
-                        |   MENOR_IGUAL
-                        ;
-operadores_logicos::=       AND
-                        |   OR
-                        |   NOT
-                        ;
 operacion_aritmetica_simple::= valores_validos_numero
                              | valores_validos_texto
                              | IDENTIFICADOR:id    
-                            {:  /*parser.resultado = parser.resultado+""+id;*/
-                                parser.stack.peek().append(id); 
+                            {:  /*parser.resultado = parser.resultado+""+id;*/ 
                                 SimboloC simboloComparacion = parser.tabla.obtenerSimbolo(id);
+                                parser.stack.peek().append(simboloComparacion.getValor());
                                 switch (simboloComparacion.getTipo()){
                                     case "char*":
                                         parser.booltexto = true;
@@ -390,28 +379,6 @@ operacion_aritmetica_compuesta::=   operacion_aritmetica_parentesis operadores_a
                                 |   operacion_aritmetica_parentesis operadores_aritmeticos error
                                 /*|   operacion_aritmetica error*/
                                 ;
-operacion_relacional::=     valores_validos_numero operadores_relacionales1 valores_validos_numero
-                        |   valores_validos_numero operadores_relacionales1 IDENTIFICADOR
-                        |   valores_validos_texto operadores_relacionales1 valores_validos_texto
-                        |   valores_validos_texto operadores_relacionales1 IDENTIFICADOR
-                        |   IDENTIFICADOR operadores_relacionales1 IDENTIFICADOR
-                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_numero
-                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_texto
-
-                        |   valores_validos_numero operadores_relacionales2 valores_validos_numero
-                        |   valores_validos_numero operadores_relacionales2 IDENTIFICADOR
-                        |   IDENTIFICADOR operadores_relacionales2 IDENTIFICADOR
-                        |   IDENTIFICADOR operadores_relacionales2 valores_validos_numero
-
-                        |   valores_validos_numero operadores_relacionales1 error
-                        |   valores_validos_numero operadores_relacionales2 error
-                        |   valores_validos_texto operadores_relacionales1 error
-                        |   IDENTIFICADOR operadores_relacionales1 error
-                        |   IDENTIFICADOR operadores_relacionales2 error
-                        ;
-operacion_logica::=     operacion_relacional operadores_logicos operacion_relacional
-                    |   operacion_relacional operadores_logicos error
-                    ;
 operaciones_validas1::= IDENTIFICADOR:id ASIGNACION operacion_aritmetica_compuesta:exp
                     {:  
                         /*System.out.println("OPERACIONES_VALIDAS_1");*/
@@ -442,16 +409,32 @@ operaciones_validas1::= IDENTIFICADOR:id ASIGNACION operacion_aritmetica_compues
                             }
                             if(!simbolo.isConstante()){                         /*Simbolo es constante*/
                                 if(parser.esCompatible(parser.booltexto,parser.boolchar,parser.boolint,parser.boolfloat)){  /*Tipo de dato distinto*/
-                                    /*parser.simbolo = new SimboloC(id, parser.tipoDato, parser.resultado,"metodo",false);  *//*Valor con parser.resultado*/
                                     parser.resultado = parser.stack.pop().toString();
-                                    parser.simbolo = new SimboloC(id, parser.tipoDato, parser.resultado,"metodo",false);
-                                    /*System.out.println("[***_ _ _***]"+simbolo);*/
-                                    if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
-                                        System.out.println("Identificador actualizado "+id);
-                                        System.out.println(parser.tabla.mostrar());
-                                    } else {
-                                        System.out.println("Identificador NO actualizado "+id);
-                                    }  
+                                    
+                                    switch (parser.tipoActual){
+                                            case "int":
+                                            case "float":
+                                            Calculadora calcular = new Calculadora();
+                                            String valorint = calcular.evaluar(parser.resultado, parser.tipoActual);
+                                            parser.simbolo = new SimboloC(id, parser.tipoDato, valorint,"metodo",false);
+                                            if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
+                                                System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
+                                                System.out.println(parser.tabla.mostrar());
+                                            } else {
+                                                System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
+                                            }                                              
+                                            break;
+                                        default:
+                                            parser.simbolo = new SimboloC(id, parser.tipoDato, parser.resultado,"metodo",false);
+                                            /*System.out.println("[***_ _ _***]"+simbolo);*/
+                                            if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
+                                                System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
+                                                System.out.println(parser.tabla.mostrar());
+                                            } else {
+                                                System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
+                                            }                                              
+                                            break;
+                                    }
                                 } else{
                                     System.err.println("[ASEM-ERROR] '"+id+"' espera tipos de dato "+parser.tipoActual);
                                 }
@@ -476,6 +459,40 @@ operaciones_validas1::= IDENTIFICADOR:id ASIGNACION operacion_aritmetica_compues
                     |   IDENTIFICADOR ASIGNACION operacion_aritmetica_compuesta error*/
                     |   IDENTIFICADOR ASIGNACION error
                     |   IDENTIFICADOR error
+                    ;
+operadores_relacionales1::= IGUALDAD
+                        |   DIFERENTE
+                        ;
+operadores_relacionales2::= MAYOR_QUE
+                        |   MENOR_QUE
+                        |   MAYOR_IGUAL
+                        |   MENOR_IGUAL
+                        ;
+operadores_logicos::=       AND
+                        |   OR
+                        |   NOT
+                        ;
+operacion_relacional::=     valores_validos_numero operadores_relacionales1 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales1 IDENTIFICADOR
+                        |   valores_validos_texto operadores_relacionales1 valores_validos_texto
+                        |   valores_validos_texto operadores_relacionales1 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales1 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_numero
+                        |   IDENTIFICADOR operadores_relacionales1 valores_validos_texto
+
+                        |   valores_validos_numero operadores_relacionales2 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales2 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales2 IDENTIFICADOR
+                        |   IDENTIFICADOR operadores_relacionales2 valores_validos_numero
+
+                        |   valores_validos_numero operadores_relacionales1 error
+                        |   valores_validos_numero operadores_relacionales2 error
+                        |   valores_validos_texto operadores_relacionales1 error
+                        |   IDENTIFICADOR operadores_relacionales1 error
+                        |   IDENTIFICADOR operadores_relacionales2 error
+                        ;
+operacion_logica::=     operacion_relacional operadores_logicos operacion_relacional
+                    |   operacion_relacional operadores_logicos error
                     ;
 operaciones_validas2::= operacion_relacional
                     {:  System.out.println("[AS-OV-2] Esta es una operacion relacional"); :}
