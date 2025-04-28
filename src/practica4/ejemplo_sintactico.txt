@@ -3,9 +3,11 @@
 #include <stdia.h>
 
 int main(){
+    int resultadoComplejo;
+    resultadoComplejo = (10 + 20) * (30 - 15);
     const int a = 10;
     int suma;        // Válido
-    suma = a + 5 - 2;
+    suma = (a + 5) - (2);
     float b;
     b = a;        // Error: Asignación de int a float
     c = 10;       // Error: Identificador no declarado
