@@ -412,8 +412,8 @@ operaciones_validas1::= IDENTIFICADOR:id ASIGNACION operacion_aritmetica_compues
                                     parser.resultado = parser.stack.pop().toString();
                                     
                                     switch (parser.tipoActual){
-                                            case "int":
-                                            case "float":
+                                        case "int":
+                                        case "float":
                                             Calculadora calcular = new Calculadora();
                                             String valorint = calcular.evaluar(parser.resultado, parser.tipoActual);
                                             parser.simbolo = new SimboloC(id, parser.tipoDato, valorint,"metodo",false);
@@ -498,8 +498,6 @@ operaciones_validas2::= operacion_relacional
                     {:  System.out.println("[AS-OV-2] Esta es una operacion relacional"); :}
                     |   operacion_logica
                     {:  System.out.println("[AS-OV-2] Esta es una operacion logica"); :}
-                    /*|   operacion_relacional error
-                    |   operacion_logica error*/
                     ;
 operaciones::=      operaciones_validas1 operaciones
                 |   operaciones_validas2 operaciones

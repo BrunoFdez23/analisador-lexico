@@ -4,10 +4,10 @@
  */
 package practica4;
 
-/**
- *
- * @author ggosi
- */
+/* Barrera Alaniz Jose Angel */
+/* Fernández Flores Bruno Eduardo */
+/* Sanchez Mora Jose Alfredo */
+
 import java.util.Stack;
 
 public class Calculadora {

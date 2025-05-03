@@ -23,7 +23,7 @@ public class GeneradorCupParser {
         String[] parametros = {
             "-destdir", "src\\practica4",
             "-parser", "ParserC",
-            "-progress", "src\\practica4\\sintacticoC_4.cup"};
+            "-progress", "src\\practica4\\sintacticoC_5.cup"};
         try {
             java_cup.Main.main(parametros);
         } catch (IOException ex) {

@@ -5,16 +5,24 @@
 int main(){
     int resultadoComplejoInt;
     resultadoComplejoInt = (10 + 20) * (30 - 15);
-    resultadoComplejoInt == 450
+    _Bool jjjjjjj;
+    jjjjjjj = resultadoComplejoInt == 450 && resultadoComplejoInt == 450;
     float resultadoComplejoFloat;
     resultadoComplejoFloat = (10.25 + 20.75) * (30.0 - 15.0);
     const int a = 10;
+    a = 15;
     int suma;        // Válido
     suma = (a + 5) - (2);
     float b;
     b = a;        // Error: Asignación de int a float
     c = 10;       // Error: Identificador no declarado
     const char* d = "Hola";
-    //d = "Hola";
+    d = "HolaMundo";
+
+    jjjjjjj = resultadoComplejoInt == 455;
+//    if(resultadoComplejoInt == 450){/*nada*/}
+//    if(resultadoComplejoInt == 450){/*nada*/} else {/*nada x2*/}
+//    while(resultadoComplejoInt <= 450){/*nada*/}
+//    for(int suma = 0; suma <= 450; suma = suma + 1){/*nada*/}
 return 0;
 }
