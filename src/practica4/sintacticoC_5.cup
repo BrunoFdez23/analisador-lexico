@@ -7,12 +7,15 @@ package practica4;
 import java_cup.runtime.*;
 import java.util.Stack;
 import practica4.Calculadora1;
+import practica4.GeneradorCodigoIntermedio;
 
 parser code{:
     public static TablaSimbolosC tabla = new TablaSimbolosC();
+    public static GeneradorCodigoIntermedio cIntermedio = new GeneradorCodigoIntermedio();
     public static SimboloC simbolo;
     public static String tipoDato = "";
     public static String resultado = "";
+    public static String resultadoExpresion = "";
     public static String resultadoParcial = "";
     public static String tipoActual = "";
     public static boolean booltexto = false;
@@ -20,9 +23,13 @@ parser code{:
     public static boolean boolint = false;
     public static boolean boolfloat = false;
     public static boolean boolbool = false;
-    
+    public static int cTemp = 1;
+
     /*Para guardar valores de variables formato string*/
     public static Stack<StringBuilder> stack = new Stack<StringBuilder>() {{
+        push(new StringBuilder());
+    }};
+    public static Stack<StringBuilder> stack2 = new Stack<StringBuilder>() {{
         push(new StringBuilder());
     }};
 
@@ -51,11 +58,14 @@ parser code{:
         boolbool = false; 
         stack.clear();
         stack.push(new StringBuilder());
+        stack2.clear();
+        stack2.push(new StringBuilder());
     }
     
     public static void reglaIdentificador(String id){
         SimboloC simboloComparacion = tabla.obtenerSimbolo(id);
         stack.peek().append(simboloComparacion.getValor());
+        stack2.peek().append(id);
         switch (simboloComparacion.getTipo()){
             case "char*":
                 booltexto = true;
@@ -81,6 +91,10 @@ parser code{:
                 System.err.println("[SCASE-ERROR] Nos topamos con un identicador que tiene un tipo de dato desconocido.");
                 break;
         }
+    }
+
+    public static void generarCI(String expresion){
+        cTemp = cIntermedio.generarCodigoIntermedio(expresion, cTemp);
     }
 
     @Override
@@ -259,49 +273,61 @@ declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
                 |   lista_tipo_dato error
                 ;
 
-declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION NUMDECIMAL:numdec PUNTO_Y_COMA
+declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION:igual NUMDECIMAL:numdec PUNTO_Y_COMA
                 {:  
                     parser.simbolo = new SimboloC(id, parser.tipoDato,""+numdec,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
                         System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
+                                parser.resultadoExpresion = id+""+igual+""+numdec;
+                                parser.generarCI(parser.resultadoExpresion);
+                                parser.resultadoExpresion = "";
                     } else {
                         System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
                     /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante entero"); */
                 :}
 
-                |   CONST lista_tipo_flotante IDENTIFICADOR:id ASIGNACION NUMFLOTANTEDEC:numfloatdec PUNTO_Y_COMA
+                |   CONST lista_tipo_flotante IDENTIFICADOR:id ASIGNACION:igual NUMFLOTANTEDEC:numfloatdec PUNTO_Y_COMA
                 {:  
                     parser.simbolo = new SimboloC(id, parser.tipoDato, ""+numfloatdec,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
                         System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
+                                parser.resultadoExpresion = id+""+igual+""+numfloatdec;
+                                parser.generarCI(parser.resultadoExpresion);
+                                parser.resultadoExpresion = "";
                     } else {
                         System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
                     /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante flotante"); */
                 :}
 
-                |   CONST CHAR IDENTIFICADOR:id ASIGNACION CADENACHAR:cchar PUNTO_Y_COMA
+                |   CONST CHAR IDENTIFICADOR:id ASIGNACION:igual CADENACHAR:cchar PUNTO_Y_COMA
                 {:  
                     /*String charValue = String.valueOf(((Character) cchar).charValue());*/
                     parser.simbolo = new SimboloC(id, "char", cchar,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
                         System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
+                                parser.resultadoExpresion = id+""+igual+""+cchar;
+                                parser.generarCI(parser.resultadoExpresion);
+                                parser.resultadoExpresion = "";
                     } else {
                         System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
                     /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char"); */
                 :}
 
-                |   CONST CHAR MULTIPLICACION IDENTIFICADOR:id ASIGNACION CADENATEXTO:texto PUNTO_Y_COMA
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR:id ASIGNACION:igual CADENATEXTO:texto PUNTO_Y_COMA
                 {:  
                     parser.simbolo = new SimboloC(id, "char*", texto,"metodo",true);
                     if(parser.tabla.agregar(id, parser.simbolo)){
                         System.out.println("[AGREGAR]Constante agregada '"+id+"'");
                                 System.out.println(parser.tabla.mostrar());
+                                parser.resultadoExpresion = id+""+igual+""+texto;
+                                parser.generarCI(parser.resultadoExpresion);
+                                parser.resultadoExpresion = "";
                     } else {
                         System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
                     }  
@@ -336,38 +362,48 @@ declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION NUM
 valores_validos_texto::=    CADENATEXTO:ctexto 
                         {:  /*parser.resultado = parser.resultado+""+ctexto;*/
                             parser.stack.peek().append(ctexto);
+                            parser.stack2.peek().append(ctexto);
                             parser.booltexto = true;
                         :}
                         |   CADENACHAR:cchar  
                         {:  /*parser.resultado = parser.resultado+""+cchar;*/ 
                             parser.stack.peek().append(cchar);     
+                            parser.stack2.peek().append(cchar);     
                             parser.boolchar = true;
                        :}
                         ;
 valores_validos_numero::= NUMDECIMAL:numdec    
                         {:  /*parser.resultado = parser.resultado+""+numdec;*/   
                             parser.stack.peek().append(numdec);   
+                            parser.stack2.peek().append(numdec);   
                             parser.boolint = true;
                         :}
                         | NUMFLOTANTEDEC:numfloatdec    
                         {:  /*parser.resultado = parser.resultado+""+numfloatdec;*/      
-                            parser.stack.peek().append(numfloatdec);   
+                            parser.stack.peek().append(numfloatdec);       
+                            parser.stack2.peek().append(numfloatdec);   
                             parser.boolfloat = true;
                         :}
                         ;
 operadores_aritmeticos::= SUMA:suma         {:  /*parser.resultado = parser.resultado+""+suma;   */
-                                                parser.stack.peek().append(suma);  :}
+                                                parser.stack.peek().append(suma);  
+                                                parser.stack2.peek().append(suma);  
+                                            :}
                         | RESTA:resta       {:  /*parser.resultado = parser.resultado+""+resta;*/   
-                                                parser.stack.peek().append(resta); 
+                                                parser.stack.peek().append(resta);    
+                                                parser.stack2.peek().append(resta); 
                                             :}
                         | MULTIPLICACION:producto   {:  /*parser.resultado = parser.resultado+""+producto; */  
-                                                        parser.stack.peek().append(producto); 
+                                                        parser.stack.peek().append(producto);   
+                                                        parser.stack2.peek().append(producto); 
                                                     :}
                         | DIVISION:division {:  /*parser.resultado = parser.resultado+""+division;   */
                                                 parser.stack.peek().append(division); 
+                                                parser.stack2.peek().append(division); 
                                             :}
                         | MODULO:modulo     {:  /*parser.resultado = parser.resultado+""+modulo;   */
                                                 parser.stack.peek().append(modulo); 
+                                                parser.stack2.peek().append(modulo); 
                                             :}
                         ;
 operacion_aritmetica_simple::= valores_validos_numero
@@ -381,12 +417,18 @@ operacion_aritmetica::= operacion_aritmetica operadores_aritmeticos operacion_ar
                     | operacion_aritmetica_simple 
                     | operadores_aritmeticos error
                     ;
-operacion_aritmetica_parentesis_izq::=  PARENTESIS_IZQ  {:   parser.stack.push(new StringBuilder());   :} 
+operacion_aritmetica_parentesis_izq::=  PARENTESIS_IZQ  
+                                    {:  
+                                        parser.stack.push(new StringBuilder());  
+                                        parser.stack2.push(new StringBuilder());   
+                                    :} 
                                     ;
 operacion_aritmetica_parentesis::=  operacion_aritmetica_parentesis_izq operacion_aritmetica PARENTESIS_DER
                                 {:   
                                     StringBuilder contenido = parser.stack.pop(); 
                                     parser.stack.peek().append("(").append(contenido).append(")");
+                                    StringBuilder contenido2 = parser.stack2.pop(); 
+                                    parser.stack2.peek().append("(").append(contenido2).append(")");
                                 :}
 
                                 |   operacion_aritmetica_parentesis_izq operacion_aritmetica error
@@ -402,17 +444,17 @@ operacion_aritmetica_compuesta::=   operacion_aritmetica_parentesis operadores_a
                                 ;
 operaciones_validas1::=     operacion_aritmetica_compuesta
                         ;
-operadores_relacionales1::= IGUALDAD:igualdad   {:  parser.stack.peek().append(igualdad);  :}
-                        |   DIFERENTE:diferente {:  parser.stack.peek().append(diferente);  :}
+operadores_relacionales1::= IGUALDAD:igualdad   {:  parser.stack.peek().append(igualdad);  parser.stack2.peek().append(igualdad);:}
+                        |   DIFERENTE:diferente {:  parser.stack.peek().append(diferente);  parser.stack2.peek().append(diferente);:}
                         ;
-operadores_relacionales2::= MAYOR_QUE:mayor_que     {:  parser.stack.peek().append(mayor_que);  :}
-                        |   MENOR_QUE:menor_que     {:  parser.stack.peek().append(menor_que);  :}
-                        |   MAYOR_IGUAL:mayor_igual {:  parser.stack.peek().append(mayor_igual);  :}
-                        |   MENOR_IGUAL:menor_igual {:  parser.stack.peek().append(menor_igual);  :}
+operadores_relacionales2::= MAYOR_QUE:mayor_que     {:  parser.stack.peek().append(mayor_que);  parser.stack2.peek().append(mayor_que);:}
+                        |   MENOR_QUE:menor_que     {:  parser.stack.peek().append(menor_que);  parser.stack2.peek().append(menor_que);:}
+                        |   MAYOR_IGUAL:mayor_igual {:  parser.stack.peek().append(mayor_igual);  parser.stack2.peek().append(mayor_igual);:}
+                        |   MENOR_IGUAL:menor_igual {:  parser.stack.peek().append(menor_igual);  parser.stack2.peek().append(menor_igual);:}
                         ;
-operadores_logicos::=       AND:and     {:  parser.stack.peek().append(and);  :}
-                        |   OR:or       {:  parser.stack.peek().append(or);  :}
-                        |   NOT:not     {:  parser.stack.peek().append(not);  :}
+operadores_logicos::=       AND:and     {:  parser.stack.peek().append(and);  parser.stack2.peek().append(and);:}
+                        |   OR:or       {:  parser.stack.peek().append(or);  parser.stack2.peek().append(or);:}
+                        |   NOT:not     {:  parser.stack.peek().append(not);  parser.stack2.peek().append(not);:}
                         ;
 valor_identificador::=      IDENTIFICADOR:id
                         {:  parser.reglaIdentificador(id);  :}
@@ -444,7 +486,7 @@ operaciones_validas2::= operacion_relacional
                     |   operacion_logica
                     {:  System.out.println("[AS-OV-2] Esta es una operacion logica"); :}
                     ;
-operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1 
+operaciones::=      IDENTIFICADOR:id ASIGNACION:igual operaciones_validas1 
                 {:  
                     /*System.out.println("OPERACIONES_VALIDAS_1");*/
                     SimboloC simbolo = parser.tabla.obtenerSimbolo(id);
@@ -479,6 +521,7 @@ operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1
                         if(!simbolo.isConstante()){                         /*Simbolo es constante*/
                             if(parser.esCompatible(parser.booltexto,parser.boolchar,parser.boolint,parser.boolfloat, parser.boolbool)){  /*Tipo de dato distinto*/
                                 parser.resultado = parser.stack.pop().toString();
+                                parser.resultadoExpresion = parser.stack2.pop().toString();
 
                                 switch (parser.tipoActual){
                                     case "int":
@@ -489,6 +532,8 @@ operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1
                                         if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
                                             System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
                                             System.out.println(parser.tabla.mostrar());
+                                            parser.resultadoExpresion = id+""+igual+""+parser.resultadoExpresion;
+                                            parser.generarCI(parser.resultadoExpresion);
                                         } else {
                                             System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
                                         }                                              
@@ -499,6 +544,8 @@ operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1
                                         if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
                                             System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
                                             System.out.println(parser.tabla.mostrar());
+                                            parser.resultadoExpresion = id+""+igual+""+parser.resultadoExpresion;
+                                            parser.generarCI(parser.resultadoExpresion);
                                         } else {
                                             System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
                                         }                                              
@@ -518,7 +565,7 @@ operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1
                     parser.reseteoDatos();
                 :}
 
-                |   IDENTIFICADOR:id ASIGNACION operaciones_validas2
+                |   IDENTIFICADOR:id ASIGNACION:igual operaciones_validas2
                 {:
                     SimboloC simbolo = parser.tabla.obtenerSimbolo(id);
                     if (simbolo != null) {                                  /*Simbolo no declarado*/
@@ -528,6 +575,7 @@ operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1
                             if(!simbolo.isConstante()){                         /*Simbolo es constante*/
                                 if(parser.esCompatible(parser.booltexto,parser.boolchar,parser.boolint,parser.boolfloat, parser.boolbool)){  /*Tipo de dato distinto*/
                                     parser.resultado = parser.stack.pop().toString();
+                                    parser.resultadoExpresion = parser.stack2.pop().toString();
 
                                     Calculadora1 calcular = new Calculadora1();
                                     String valorint = calcular.evaluar(parser.resultado, parser.tipoActual);
@@ -536,6 +584,8 @@ operaciones::=      IDENTIFICADOR:id ASIGNACION operaciones_validas1
                                     if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
                                         System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
                                         System.out.println(parser.tabla.mostrar());
+                                        parser.resultadoExpresion = id+""+igual+""+parser.resultadoExpresion;
+                                        parser.generarCI(parser.resultadoExpresion);
                                     } else {
                                         System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
                                     }

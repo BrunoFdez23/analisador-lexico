@@ -10,14 +10,14 @@ int main(){
     float resultadoComplejoFloat;
     resultadoComplejoFloat = (10.25 + 20.75) * (30.0 - 15.0);
     const int a = 10;
-    a = 15;
+    //a = 15;
     int suma;        // Válido
-    suma = (a + 5) - (2);
+    suma = (a + 5) - 2;
     float b;
-    b = a;        // Error: Asignación de int a float
-    c = 10;       // Error: Identificador no declarado
+    //b = a;        // Error: Asignación de int a float
+    //c = 10;       // Error: Identificador no declarado
     const char* d = "Hola";
-    d = "HolaMundo";
+    //d = "HolaMundo";
 
     jjjjjjj = resultadoComplejoInt == 455;
 //    if(resultadoComplejoInt == 450){/*nada*/}
