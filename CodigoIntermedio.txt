@@ -23,11 +23,29 @@ t15=5
 c=t15
 t16=t15!=0
 cBool=t16
-t17=t10/t15
-aENTREc=t17
-t18=0
-c=t18
-t19=t18!=0
-cBool=t19
-t20="No se puede dividir entre '0'"
-elseString=t20
+t17=cBool
+if t17 goto L1
+goto L2
+L1:
+t18=t10/t15
+aENTREc=t18
+goto L3
+L2:
+goto L3
+L3:
+t19=0
+c=t19
+t20=t19!=0
+cBool=t20
+t21=cBool
+if t21 goto L4
+goto L5
+L4:
+t22=t10*t19
+aPORc=t22
+goto L6
+L5:
+t23="No se puede dividir entre '0'"
+elseString=t23
+goto L6
+L6:
