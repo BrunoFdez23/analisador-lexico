@@ -19,3 +19,15 @@ t13="Hola"
 d=t13
 t14=t3==455
 jjjjjjj=t14
+t15=5
+c=t15
+t16=t15!=0
+cBool=t16
+t17=t10/t15
+aENTREc=t17
+t18=0
+c=t18
+t19=t18!=0
+cBool=t19
+t20="No se puede dividir entre '0'"
+elseString=t20

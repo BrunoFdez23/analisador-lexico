@@ -65,7 +65,7 @@ public class GeneradorCodigoIntermedio {
             for (String linea : codigoGenerado) {
                 out.println(linea);
             }
-            System.out.println("Código intermedio añadido a: " + rutaArchivo);
+            System.out.println("Codigo intermedio agregado a: " + rutaArchivo);
         } catch (IOException e) {
             System.err.println("Error al escribir en el archivo: " + e.getMessage());
         }

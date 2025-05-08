@@ -51,13 +51,32 @@ public class Calculadora1 {
                 operaciones.pop();
             } 
             else {
-                // Manejo de operadores de 2 caracteres (&&, ||, ==, !=, etc.)
+                // Manejo de operadores de dos caracteres
                 if (i < expresion.length() - 1) {
                     char next = expresion.charAt(i + 1);
-                    String operadorDoble = "" + c + next;
-                    if (esOperadorDoble(operadorDoble)) {
-                        c = operadorDoble.charAt(0); // Simbolo temporal
-                        i++; // Saltamos el siguiente caracter
+                    String posibleOperador = "" + c + next;
+                    if (esOperadorDoble(posibleOperador)) {
+                        switch (posibleOperador) {
+                            case "!=":
+                                c = '≠';  // Símbolo temporal para !=
+                                break;
+                            case "==":
+                                c = '=';  // Símbolo temporal para ==
+                                break;
+                            case ">=":
+                                c = '≥';
+                                break;
+                            case "<=":
+                                c = '≤';
+                                break;
+                            case "&&":
+                                c = '&';
+                                break;
+                            case "||":
+                                c = '|';
+                                break;
+                        }
+                        i++;  // Avanzamos un carácter adicional
                     }
                 }
                 

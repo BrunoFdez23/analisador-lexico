@@ -1,0 +1,846 @@
+/* Barrera Alaniz Jose Angel */
+/* Fernández Flores Bruno Eduardo */
+/* Sanchez Mora Jose Alfredo */
+
+package practica4;
+
+import java_cup.runtime.*;
+import java.util.Stack;
+import practica4.Calculadora1;
+import practica4.GeneradorCodigoIntermedio;
+
+parser code{:
+    public static TablaSimbolosC tabla = new TablaSimbolosC();
+    public static GeneradorCodigoIntermedio cIntermedio = new GeneradorCodigoIntermedio();
+    public static SimboloC simbolo;
+    public static String tipoDato = "";
+    public static String resultado = "";
+    public static String resultadoExpresion = "";
+    public static String resultadoParcial = "";
+    public static String tipoActual = "";
+    public static boolean booltexto = false;
+    public static boolean boolchar = false;
+    public static boolean boolint = false;
+    public static boolean boolfloat = false;
+    public static boolean boolbool = false;
+    public static boolean boolcondicion = true;
+    public static int cTemp = 1;
+
+    /*Para guardar valores de variables formato string*/
+    public static Stack<StringBuilder> stack = new Stack<StringBuilder>() {{
+        push(new StringBuilder());
+    }};
+    public static Stack<StringBuilder> stack2 = new Stack<StringBuilder>() {{
+        push(new StringBuilder());
+    }};
+
+    public static boolean esCompatible(boolean booltexto, boolean boolchar, boolean boolint, boolean boolfloat, boolean boolbool){
+        int count = 0;
+        if(booltexto){ count = count+1;}
+        if(boolchar){ count = count+1;}
+        if(boolint){ count = count+1;}
+        if(boolfloat){ count = count+1;}
+        if(boolbool){ count = count+1;}
+
+        if(count != 1){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public static void reseteoDatos(){
+        resultado = "";
+        tipoActual = ""; 
+        booltexto = false; 
+        boolchar = false; 
+        boolint = false; 
+        boolfloat = false;
+        boolbool = false; 
+        stack.clear();
+        stack.push(new StringBuilder());
+        stack2.clear();
+        stack2.push(new StringBuilder());
+    }
+    
+    public static void reglaIdentificador(String id){
+        SimboloC simboloComparacion = tabla.obtenerSimbolo(id);
+        stack.peek().append(simboloComparacion.getValor());
+        stack2.peek().append(id);
+        switch (simboloComparacion.getTipo()){
+            case "char*":
+                booltexto = true;
+                break;
+            case "char":
+                boolchar = true;
+                break;
+            case "int":
+                boolint = true;
+                break;
+            case "float":
+                boolfloat = true;
+                break;
+            case "bool":
+                boolbool = true;
+                break;
+            default:
+                booltexto = true;
+                boolchar = true;
+                boolint = true;
+                boolfloat = true;
+                boolbool = true;
+                System.err.println("[SCASE-ERROR] Nos topamos con un identicador que tiene un tipo de dato desconocido.");
+                break;
+        }
+    }
+
+    public static void generarCI(String expresion){
+        cTemp = cIntermedio.generarCodigoIntermedio(expresion, cTemp);
+    }
+
+    @Override
+    public void syntax_error(Symbol s){
+        System.err.println("Error sintactico en ["+s.left+":"+(s.right-1)+"], token inesperado "+s.value);
+    }
+:}
+
+/*  Terminales Palabras Reservadas  */
+terminal    AUTO, BREAK, CASE, CHAR, CONST, CONTINUE, DEFAULT, DO, DOUBLE, ELSE,
+            ENUM, EXTERN, FLOAT, FOR, GOTO, IF, INLINE, INT, LONG, MAIN, REGISTER,
+            RESTRICT, RETURN, SHORT, SIGNED, SIZEOF, STATIC, STRUCT, SWITCH,
+            TYPEDEF, TYPEOF, TYPEOF_UNQUAL, UNION, UNSIGNED, VOID, VOLATILE,
+            WHILE, _Alignas, _Alignof, _Atomic, _Complex, _Generic,
+            _Imaginary, _Noreturn, _Static_assert, _Thread_local
+            ;
+
+/* Terminales Directivas */
+terminal    DIRECTIVA_INCLUDE, DIRECTIVA_DEFINE, DIRECTIVA_IFDEF, 
+            DIRECTIVA_IFNDEF, DIRECTIVA_ELSE, DIRECTIVA_ENDIF
+            ;
+
+/* Terminales Caracteres de Formato */
+terminal    CFORMATO_INTEGER, CFORMATO_UNSIGNED, CFORMATO_FLOTANTE_DECIMAL,
+            CFORMATO_NOTACION_EXPONENCIAL, CFORMATO_GENERAL, CFORMATO_HEXADECIMAL,
+            CFORMATO_OCTAL, CFORMATO_STRING, CFORMATO_CHAR, CFORMATO_POINTER, 
+            CFORMATO_NUM_CARACTERES_PROCESADOS
+            ;
+
+/*  Terminales Operadores  */
+terminal    SUMA, RESTA, MULTIPLICACION, DIVISION, MODULO, IGUALDAD, DIFERENTE,
+            MENOR_QUE, MAYOR_QUE, MENOR_IGUAL, MAYOR_IGUAL, AND, OR, NOT,
+            ASIGNACION, SUMA_ASIGNACION, RESTA_ASIGNACION, MULT_ASIGNACION,
+            DIV_ASIGNACION, MOD_ASIGNACION, AND_BIT, OR_BIT, XOR_BIT, NOT_BIT,
+            DESPLAZA_IZQ, DESPLAZA_DER, INCREMENTO, DECREMENTO, CONDICIONAL,
+            DOS_PUNTOS, PUNTO, ACCESO_PUNTERO
+            ;
+
+/*  Terminales Simbolos  */
+terminal    PARENTESIS_IZQ, PARENTESIS_DER, CORCHETE_IZQ, CORCHETE_DER,
+            LLAVE_IZQ, LLAVE_DER, COMA, PUNTO_Y_COMA
+            ;
+
+/*  Terminales Expresiones Regulares  */
+terminal    FINDELINEA, ESPACIOS, COMENTARIOUNILINEA, COMENTARIOMULTILINEA,
+            NUMHEXADECIMAL, NUMBINARIO, NUMOCTAL, NUMFLOTANTEHEX
+            ;
+terminal String     IDENTIFICADOR, CADENATEXTO, CADENACHAR, NUMDECIMAL, NUMFLOTANTEDEC,
+                    _Bool
+                ;/*
+terminal Character  CADENACHAR;
+terminal Integer    NUMDECIMAL;
+terminal Float      NUMFLOTANTEDEC;*/
+
+
+/*  NO TERMINALES  */
+non terminal    programa, declaraciones, dec_include, dec_funciones, funcion_main, 
+                lista_tipo_dato, lista_tipo_flotante, lista_tipo_entero, parametros, parametro,
+                lista_identificador, declaracion_variable, declaracion_constante,
+                valores_validos_numero, valores_validos_texto, valor_identificador, operadores_aritmeticos,
+                operadores_relacionales1, operadores_relacionales2, operadores_logicos,
+                operacion_aritmetica_simple, operacion_aritmetica, operacion_aritmetica_parentesis, operacion_aritmetica_parentesis_izq, operacion_aritmetica_compuesta, 
+                operacion_relacional, operacion_logica, operaciones_validas1, 
+                operaciones_validas2, operaciones, estructura_control, sentencia_if, 
+                sentencia_while, sentencia_for, bloque, sentencia, inicializacion, 
+                actualizacion, expresion, condicion, condicion_false
+                ;
+start with programa;
+
+programa::=         dec_include funcion_main
+                |   dec_include dec_funciones funcion_main
+                ;
+
+dec_include::=      DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MAYOR_QUE dec_include
+                    {:/*  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  */:}
+                |   DIRECTIVA_INCLUDE MENOR_QUE IDENTIFICADOR PUNTO IDENTIFICADOR MAYOR_QUE
+                    {:/*  System.out.println("[AS-INCLUDE] Esta es una directiva #include");  */:}
+                ;
+
+parametros::=       parametros COMA parametro  
+                |   parametros COMA error
+                |   parametro
+                ;
+
+parametro::=    lista_tipo_dato IDENTIFICADOR
+            ;
+
+dec_funciones::=    dec_funciones lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); */:}
+                |   dec_funciones lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); */:}
+                |   dec_funciones VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); */:}
+                |   dec_funciones VOID IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); */:}
+
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); */:}
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion retornable"); */:}
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); */:}
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                    {:/* System.out.println("[AS-DEC-FUNCION] Esta es una declaracion de funcion void"); */:}
+
+/* ERRORES  */
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR PUNTO_Y_COMA error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN IDENTIFICADOR error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque RETURN error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ parametros error
+                |   lista_tipo_dato IDENTIFICADOR PARENTESIS_IZQ error
+                |   lista_tipo_dato IDENTIFICADOR error
+                |   lista_tipo_dato error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ bloque error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER LLAVE_IZQ error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros PARENTESIS_DER error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ parametros error
+                |   VOID IDENTIFICADOR PARENTESIS_IZQ error
+                |   VOID IDENTIFICADOR error
+                |   VOID error
+                ;
+
+funcion_main::= INT MAIN PARENTESIS_IZQ PARENTESIS_DER LLAVE_IZQ bloque RETURN NUMDECIMAL PUNTO_Y_COMA LLAVE_DER
+                {: System.out.println("[AS-MAIN] Esta es la funcion main"); :}
+                ;
+
+lista_tipo_entero::=    INT {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "int";  
+                        } 
+                        :}
+                    |   SHORT {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "int";   
+                        }
+                    :}
+                    |   LONG {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "int";  
+                        } 
+                    :}
+                    ;
+
+lista_tipo_flotante::=  FLOAT {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "float";
+                        }   
+                    :}
+                    |   DOUBLE {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "float";
+                        }   
+                    :}
+                    ;
+
+lista_tipo_dato::=      lista_tipo_entero
+                    |   lista_tipo_flotante
+                    |   CHAR 
+                    {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "char"; 
+                        }  
+                    :}
+                    |   _Bool 
+                    {:  
+                        if(parser.boolcondicion){
+                            parser.tipoDato = "bool"; 
+                        }  
+                    :}
+                    ;
+
+lista_identificador::=      lista_identificador COMA IDENTIFICADOR
+                        |   IDENTIFICADOR:id
+                        {:
+                            if(parser.boolcondicion){
+                                if(parser.tipoDato == "bool"){
+                                    parser.simbolo = new SimboloC(id, parser.tipoDato, "false","metodo",false);
+                                } else {
+                                    parser.simbolo = new SimboloC(id, parser.tipoDato, "0","metodo",false);
+                                }
+                                if(parser.tabla.agregar(id, parser.simbolo)){
+                                    System.out.println("[AGREGAR]Variable agregada '"+id+"'");
+                                    System.out.println(parser.tabla.mostrar());
+                                } else {
+                                    System.out.println("[AGREGAR-ERR]Variable NO agregada '"+id+"'");
+                                }  
+                            }
+                        :}
+
+                        |   COMA error
+                        ;
+
+declaraciones::=    declaracion_variable declaraciones
+                |   declaracion_variable
+                |   declaracion_constante declaraciones
+                |   declaracion_constante
+                ;
+
+declaracion_variable::= lista_tipo_dato lista_identificador PUNTO_Y_COMA
+                {:  
+                    if(parser.boolcondicion){
+                        parser.reseteoDatos();
+                    }
+                    /*System.out.println("[AS-DEC-TD] Esta es una declaración de variables");*/
+                :}
+                |   lista_tipo_dato lista_identificador error
+                |   lista_tipo_dato error
+                ;
+
+declaracion_constante::= CONST lista_tipo_entero IDENTIFICADOR:id ASIGNACION:igual NUMDECIMAL:numdec PUNTO_Y_COMA
+                {:  
+                    if(parser.boolcondicion){
+                        parser.simbolo = new SimboloC(id, parser.tipoDato,""+numdec,"metodo",true);
+                        if(parser.tabla.agregar(id, parser.simbolo)){
+                            System.out.println("[AGREGAR]Constante agregada '"+id+"'");
+                                    System.out.println(parser.tabla.mostrar());
+                                    parser.resultadoExpresion = id+""+igual+""+numdec;
+                                    parser.generarCI(parser.resultadoExpresion);
+                                    parser.resultadoExpresion = "";
+                        } else {
+                            System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
+                        }  
+                    }
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante entero"); */
+                :}
+
+                |   CONST lista_tipo_flotante IDENTIFICADOR:id ASIGNACION:igual NUMFLOTANTEDEC:numfloatdec PUNTO_Y_COMA
+                {:  
+                    if(parser.boolcondicion){
+                        parser.simbolo = new SimboloC(id, parser.tipoDato, ""+numfloatdec,"metodo",true);
+                        if(parser.tabla.agregar(id, parser.simbolo)){
+                            System.out.println("[AGREGAR]Constante agregada '"+id+"'");
+                                    System.out.println(parser.tabla.mostrar());
+                                    parser.resultadoExpresion = id+""+igual+""+numfloatdec;
+                                    parser.generarCI(parser.resultadoExpresion);
+                                    parser.resultadoExpresion = "";
+                        } else {
+                            System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
+                        }  
+                    }
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante flotante"); */
+                :}
+
+                |   CONST CHAR IDENTIFICADOR:id ASIGNACION:igual CADENACHAR:cchar PUNTO_Y_COMA
+                {:  
+                    if(parser.boolcondicion){
+                        /*String charValue = String.valueOf(((Character) cchar).charValue());*/
+                        parser.simbolo = new SimboloC(id, "char", cchar,"metodo",true);
+                        if(parser.tabla.agregar(id, parser.simbolo)){
+                            System.out.println("[AGREGAR]Constante agregada '"+id+"'");
+                                    System.out.println(parser.tabla.mostrar());
+                                    parser.resultadoExpresion = id+""+igual+""+cchar;
+                                    parser.generarCI(parser.resultadoExpresion);
+                                    parser.resultadoExpresion = "";
+                        } else {
+                            System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
+                        }  
+                    }
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char"); */
+                :}
+
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR:id ASIGNACION:igual CADENATEXTO:texto PUNTO_Y_COMA
+                {:  
+                    if(parser.boolcondicion){
+                        parser.simbolo = new SimboloC(id, "char*", texto,"metodo",true);
+                        if(parser.tabla.agregar(id, parser.simbolo)){
+                            System.out.println("[AGREGAR]Constante agregada '"+id+"'");
+                                    System.out.println(parser.tabla.mostrar());
+                                    parser.resultadoExpresion = id+""+igual+""+texto;
+                                    parser.generarCI(parser.resultadoExpresion);
+                                    parser.resultadoExpresion = "";
+                        } else {
+                            System.out.println("[AGREGAR-ERR]Constante NO agregada '"+id+"'");
+                        }  
+                    }
+                    /*System.out.println("[AS-DEC-CONST] Esta es una declaración de constante char*"); */
+                :}
+
+                |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION NUMDECIMAL error
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION NUMFLOTANTEDEC error
+                |   CONST CHAR IDENTIFICADOR ASIGNACION CADENACHAR error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION CADENATEXTO error
+
+                |   CONST lista_tipo_entero IDENTIFICADOR ASIGNACION error
+                |   CONST lista_tipo_flotante IDENTIFICADOR ASIGNACION error
+                |   CONST CHAR IDENTIFICADOR ASIGNACION error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR ASIGNACION error
+
+                |   CONST lista_tipo_entero IDENTIFICADOR error
+                |   CONST lista_tipo_flotante IDENTIFICADOR error
+                |   CONST CHAR IDENTIFICADOR error
+                |   CONST CHAR MULTIPLICACION IDENTIFICADOR error
+
+                |   CONST lista_tipo_entero error
+                |   CONST lista_tipo_flotante error
+                |   CONST CHAR error
+                |   CONST CHAR MULTIPLICACION error
+
+                |   CONST error
+
+                ;
+
+/* Operadores aritméticos */
+valores_validos_texto::=    CADENATEXTO:ctexto 
+                        {:  /*parser.resultado = parser.resultado+""+ctexto;*/
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(ctexto);
+                                parser.stack2.peek().append(ctexto);
+                                parser.booltexto = true;
+                            }
+                        :}
+                        |   CADENACHAR:cchar  
+                        {:  /*parser.resultado = parser.resultado+""+cchar;*/ 
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(cchar);     
+                                parser.stack2.peek().append(cchar);     
+                                parser.boolchar = true;
+                            }
+                       :}
+                        ;
+valores_validos_numero::= NUMDECIMAL:numdec    
+                        {:  /*parser.resultado = parser.resultado+""+numdec;*/   
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(numdec);   
+                                parser.stack2.peek().append(numdec);   
+                                parser.boolint = true;
+                            }
+                        :}
+                        | NUMFLOTANTEDEC:numfloatdec    
+                        {:  /*parser.resultado = parser.resultado+""+numfloatdec;*/      
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(numfloatdec);       
+                                parser.stack2.peek().append(numfloatdec);   
+                                parser.boolfloat = true;
+                            }
+                        :}
+                        ;
+operadores_aritmeticos::= SUMA:suma         {:  /*parser.resultado = parser.resultado+""+suma;   */
+                                                if(parser.boolcondicion){
+                                                    parser.stack.peek().append(suma);  
+                                                    parser.stack2.peek().append(suma);  
+                                                }
+                                            :}
+                        | RESTA:resta       {:  /*parser.resultado = parser.resultado+""+resta;*/ 
+                                                if(parser.boolcondicion){
+                                                    parser.stack.peek().append(resta);    
+                                                    parser.stack2.peek().append(resta); 
+                                                }  
+                                            :}
+                        | MULTIPLICACION:producto   {:  /*parser.resultado = parser.resultado+""+producto; */ 
+                                                        if(parser.boolcondicion){ 
+                                                            parser.stack.peek().append(producto);   
+                                                            parser.stack2.peek().append(producto);
+                                                        } 
+                                                    :}
+                        | DIVISION:division {:  /*parser.resultado = parser.resultado+""+division;   */
+                                                if(parser.boolcondicion){
+                                                    parser.stack.peek().append(division); 
+                                                    parser.stack2.peek().append(division); 
+                                                }
+                                            :}
+                        | MODULO:modulo     {:  /*parser.resultado = parser.resultado+""+modulo;   */ 
+                                                if(parser.boolcondicion){
+                                                    parser.stack.peek().append(modulo); 
+                                                    parser.stack2.peek().append(modulo); 
+                                                }
+                                            :}
+                        ;
+operacion_aritmetica_simple::= valores_validos_numero
+                             | valores_validos_texto
+                             | IDENTIFICADOR:id    
+                            {:  /*parser.resultado = parser.resultado+""+id;*/ 
+                                if(parser.boolcondicion){
+                                    parser.reglaIdentificador(id);
+                                }
+                            :}
+                             ;
+operacion_aritmetica::= operacion_aritmetica operadores_aritmeticos operacion_aritmetica_simple 
+                    | operacion_aritmetica_simple 
+                    | operadores_aritmeticos error
+                    ;
+operacion_aritmetica_parentesis_izq::=  PARENTESIS_IZQ  
+                                    {:  
+                                        if(parser.boolcondicion){
+                                            parser.stack.push(new StringBuilder());  
+                                            parser.stack2.push(new StringBuilder());
+                                        }   
+                                    :} 
+                                    ;
+operacion_aritmetica_parentesis::=  operacion_aritmetica_parentesis_izq operacion_aritmetica PARENTESIS_DER
+                                {:   
+                                    if(parser.boolcondicion){
+                                        StringBuilder contenido = parser.stack.pop(); 
+                                        parser.stack.peek().append("(").append(contenido).append(")");
+                                        StringBuilder contenido2 = parser.stack2.pop(); 
+                                        parser.stack2.peek().append("(").append(contenido2).append(")");
+                                    }
+                                :}
+
+                                |   operacion_aritmetica_parentesis_izq operacion_aritmetica error
+                                |   operacion_aritmetica_parentesis_izq error
+                                ;
+operacion_aritmetica_compuesta::=   operacion_aritmetica_parentesis operadores_aritmeticos operacion_aritmetica_compuesta 
+                                |   operacion_aritmetica_parentesis 
+                                |   operacion_aritmetica operacion_aritmetica_compuesta
+                                |   operacion_aritmetica
+
+                                |   operacion_aritmetica_parentesis operadores_aritmeticos error
+                                /*|   operacion_aritmetica error*/
+                                ;
+operaciones_validas1::=     operacion_aritmetica_compuesta
+                        ;
+operadores_relacionales1::= IGUALDAD:igualdad   
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(igualdad);  parser.stack2.peek().append(igualdad);
+                            }
+                        :}
+                        |   DIFERENTE:diferente 
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(diferente);  parser.stack2.peek().append(diferente);
+                            }
+                        :}
+                        ;
+operadores_relacionales2::= MAYOR_QUE:mayor_que     
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(mayor_que);  parser.stack2.peek().append(mayor_que);
+                            }
+                        :}
+                        |   MENOR_QUE:menor_que     
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(menor_que);  parser.stack2.peek().append(menor_que);
+                            }
+                        :}
+                        |   MAYOR_IGUAL:mayor_igual 
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(mayor_igual);  parser.stack2.peek().append(mayor_igual);
+                            }
+                        :}
+                        |   MENOR_IGUAL:menor_igual 
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(menor_igual);  parser.stack2.peek().append(menor_igual);
+                            }
+                        :}
+                        ;
+operadores_logicos::=       AND:and     
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(and);  parser.stack2.peek().append(and);
+                            }
+                        :}
+                        |   OR:or       
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(or);  parser.stack2.peek().append(or);
+                            }
+                        :}
+                        |   NOT:not     
+                        {:  
+                            if(parser.boolcondicion){
+                                parser.stack.peek().append(not);  parser.stack2.peek().append(not);
+                            }
+                        :}
+                        ;
+valor_identificador::=      IDENTIFICADOR:id
+                        {: 
+                            if(parser.boolcondicion){
+                                parser.reglaIdentificador(id);
+                            }  
+                        :}
+                        ;
+operacion_relacional::=     valores_validos_numero operadores_relacionales1 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales1 valor_identificador
+                        |   valores_validos_texto operadores_relacionales1 valores_validos_texto
+                        |   valores_validos_texto operadores_relacionales1 valor_identificador
+                        |   valor_identificador operadores_relacionales1 valor_identificador
+                        |   valor_identificador operadores_relacionales1 valores_validos_numero
+                        |   valor_identificador operadores_relacionales1 valores_validos_texto
+
+                        |   valores_validos_numero operadores_relacionales2 valores_validos_numero
+                        |   valores_validos_numero operadores_relacionales2 valor_identificador
+                        |   valor_identificador operadores_relacionales2 valor_identificador
+                        |   valor_identificador operadores_relacionales2 valores_validos_numero
+
+                        |   valores_validos_numero operadores_relacionales1 error
+                        |   valores_validos_numero operadores_relacionales2 error
+                        |   valores_validos_texto operadores_relacionales1 error
+                        |   valor_identificador operadores_relacionales1 error
+                        |   valor_identificador operadores_relacionales2 error
+                        ;
+operacion_logica::=     operacion_relacional operadores_logicos operacion_relacional
+                    |   operacion_relacional operadores_logicos error
+                    ;
+operaciones_validas2::= operacion_relacional
+                    {:  /*System.out.println("[AS-OV-2] Esta es una operacion relacional");*/ :}
+                    |   operacion_logica
+                    {:  /*System.out.println("[AS-OV-2] Esta es una operacion logica");*/ :}
+                    ;
+operaciones::=      IDENTIFICADOR:id ASIGNACION:igual operaciones_validas1 
+                {:  
+                    if(parser.boolcondicion){
+                        /*System.out.println("OPERACIONES_VALIDAS_1");*/
+                        SimboloC simbolo = parser.tabla.obtenerSimbolo(id);
+                        if (simbolo != null) {                                  /*Simbolo no declarado*/
+                            /*parser.stack.push(new StringBuilder());*/
+                            parser.tipoActual = simbolo.getTipo();
+                            switch (parser.tipoActual){
+                                case "char*":
+                                    parser.booltexto = true;
+                                    break;
+                                case "char":
+                                    parser.boolchar = true;
+                                    break;
+                                case "int":
+                                    parser.boolint = true;
+                                    break;
+                                case "float":
+                                    parser.boolfloat = true;
+                                    break;
+                                case "bool":
+                                    parser.boolbool = true;
+                                    break;
+                                default:
+                                    parser.booltexto = true;
+                                    parser.boolchar = true;
+                                    parser.boolint = true;
+                                    parser.boolfloat = true;
+                                    parser.boolbool = true;
+                                    System.err.println("[SCASE-ERROR] El identicador que tiene un tipo de dato desconocido.");
+                                    break;
+                            }
+                            if(!simbolo.isConstante()){                         /*Simbolo es constante*/
+                                if(parser.esCompatible(parser.booltexto,parser.boolchar,parser.boolint,parser.boolfloat, parser.boolbool)){  /*Tipo de dato distinto*/
+                                    parser.resultado = parser.stack.pop().toString();
+                                    parser.resultadoExpresion = parser.stack2.pop().toString();
+
+                                    switch (parser.tipoActual){
+                                        case "int":
+                                        case "float":
+                                            Calculadora1 calcular = new Calculadora1();
+                                            String valorint = calcular.evaluar(parser.resultado, parser.tipoActual);
+                                            parser.simbolo = new SimboloC(id, parser.tipoDato, valorint,"metodo",false);
+                                            if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
+                                                System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
+                                                System.out.println(parser.tabla.mostrar());
+                                                parser.resultadoExpresion = id+""+igual+""+parser.resultadoExpresion;
+                                                parser.generarCI(parser.resultadoExpresion);
+                                            } else {
+                                                System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
+                                            }                                              
+                                            break;
+                                        default:
+                                            parser.simbolo = new SimboloC(id, parser.tipoDato, parser.resultado,"metodo",false);
+                                            /*System.out.println("[***_ _ _***]"+simbolo);*/
+                                            if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
+                                                System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
+                                                System.out.println(parser.tabla.mostrar());
+                                                parser.resultadoExpresion = id+""+igual+""+parser.resultadoExpresion;
+                                                parser.generarCI(parser.resultadoExpresion);
+                                            } else {
+                                                System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
+                                            }                                              
+                                            break;
+                                    }
+                                } else{
+                                    System.err.println("[ASEM-ERROR] '"+id+"' espera tipos de dato "+parser.tipoActual);
+                                }
+                            } else {
+                                System.err.println("[ASEM-ERROR] No puedes modificar el valor de una constante.");
+                            }
+                        } else {
+                            System.err.println("[ASEM-ERROR] El identifiador '"+id+"' no fue declarado.");
+                        }
+                        /*System.out.println("[AS-OV-1] Esta es una operacion aritmetica");*/
+
+                        parser.reseteoDatos();
+                    }
+                :}
+
+                |   IDENTIFICADOR:id ASIGNACION:igual operaciones_validas2
+                {:
+                    if(parser.boolcondicion){
+                        SimboloC simbolo = parser.tabla.obtenerSimbolo(id);
+                        if (simbolo != null) {                                  /*Simbolo no declarado*/
+                            /*parser.stack.push(new StringBuilder());*/
+                            parser.tipoActual = simbolo.getTipo();
+                            if(parser.tipoActual == "bool"){
+                                if(!simbolo.isConstante()){                         /*Simbolo es constante*/
+                                    if(parser.esCompatible(parser.booltexto,parser.boolchar,parser.boolint,parser.boolfloat, parser.boolbool)){  /*Tipo de dato distinto*/
+                                        parser.resultado = parser.stack.pop().toString();
+                                        parser.resultadoExpresion = parser.stack2.pop().toString();
+                                        /*System.out.println(parser.resultado+" [...] "+parser.resultadoExpresion);*/
+                                        
+                                        Calculadora1 calcular = new Calculadora1();
+                                        String valorint = calcular.evaluar(parser.resultado, parser.tipoActual);
+                                        parser.simbolo = new SimboloC(id, parser.tipoDato, valorint,"metodo",false);
+                                        /*System.out.println("[***_ _ _***]"+simbolo);*/
+                                        if(parser.tabla.actualizarValor(id, parser.simbolo.getValor())){
+                                            System.out.println("[ACTUALIZAR]Identificador actualizado '"+id+"'");
+                                            System.out.println(parser.tabla.mostrar());
+                                            parser.resultadoExpresion = id+""+igual+""+parser.resultadoExpresion;
+                                            parser.generarCI(parser.resultadoExpresion);
+                                        } else {
+                                            System.out.println("[ACTUALIZAR-ERR]Identificador NO actualizado '"+id+"'");
+                                        }
+                                    } else{
+                                        System.err.println("[ASEM-ERROR] '"+id+"' espera tipos de dato "+parser.tipoActual);
+                                    }
+                                } else {
+                                    System.err.println("[ASEM-ERROR] No puedes modificar el valor de una constante.");
+                                }
+                            } else {
+                                System.err.println("[ASEM-ERROR] No puedes asignar un valor booleano a esta variable. '"+id+"', no es tipo '_Bool'");
+                            }
+                        } else {
+                            System.err.println("[ASEM-ERROR] El identifiador '"+id+"' no fue declarado.");
+                        }
+                        /*System.out.println("[AS-OV-1] Esta es una operacion aritmetica");*/
+
+                        parser.reseteoDatos();
+                    }
+                :}
+
+                |   IDENTIFICADOR ASIGNACION error
+                |   IDENTIFICADOR error
+                ;
+
+/*  Estructuras de control IF WHILE FOR */
+
+estructura_control::=   sentencia_if 
+                    |   sentencia_while 
+                    |   sentencia_for
+                    ;
+condicion   ::= operacion_relacional
+            {:
+                parser.resultado = parser.stack.pop().toString();
+
+                Calculadora1 calcular = new Calculadora1();
+                String valorbool = calcular.evaluar(parser.resultado, "bool");
+                if(valorbool == "false") {
+                    parser.boolcondicion = false;
+                }
+            :}
+            |   operacion_logica
+            {:
+                parser.resultado = parser.stack.pop().toString();
+
+                Calculadora1 calcular = new Calculadora1();
+                String valorbool = calcular.evaluar(parser.resultado, "bool");
+                if(valorbool == "false") {
+                    parser.boolcondicion = false;
+                }
+            :}
+            |   IDENTIFICADOR:id
+            {:
+                SimboloC simbolo = parser.tabla.obtenerSimbolo(id);
+                if (simbolo != null) {
+                    parser.tipoActual = simbolo.getTipo();
+                    if(parser.tipoActual == "bool"){
+                        parser.stack.peek().append(id);
+                        if(simbolo.getValor() == "false") {
+                            parser.boolcondicion = false;
+                        }
+                    } else { System.err.println("[ASEM-ERR] '"+id+"' debe ser tipo '_Bool'."); }
+                } else { System.err.println("[ASEM-ERR] '"+id+"' no fué declarado."); }
+            :}
+            ;
+condicion_false::=  ELSE
+                {:
+                    if(parser.boolcondicion == true){
+                        parser.boolcondicion = false;
+                    } else{
+                        parser.boolcondicion = true;
+                    }
+                    
+                :}
+                ;
+sentencia_if::=     IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  
+                    parser.boolcondicion = true;
+                    System.out.println("[AS-EC-IF] Esta es una estructura de control IF"); 
+                :}
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER condicion_false LLAVE_IZQ bloque LLAVE_DER
+                {:  
+                    parser.boolcondicion = true;
+                    System.out.println("[AS-EC-IF] Esta es una estructura de control IF ELSE"); 
+                :}
+
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER condicion_false LLAVE_IZQ bloque error
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER condicion_false LLAVE_IZQ error
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER condicion_false error
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ bloque error
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER LLAVE_IZQ error
+                |   IF PARENTESIS_IZQ condicion PARENTESIS_DER error
+                |   IF PARENTESIS_IZQ condicion error
+                |   IF PARENTESIS_IZQ error
+                |   IF error
+                ;
+sentencia_while::=  WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-WHILE] Esta es una estructura de control WHILE"); :}
+                
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ bloque error
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER LLAVE_IZQ error
+                |   WHILE PARENTESIS_IZQ operacion_relacional PARENTESIS_DER error
+                |   WHILE PARENTESIS_IZQ operacion_relacional error
+                |   WHILE PARENTESIS_IZQ error
+                |   WHILE error
+                ;
+sentencia_for::=    FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ bloque LLAVE_DER
+                {:  System.out.println("[AS-EC-FOR] Esta es una estructura de control FOR"); :}
+                
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ bloque error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER LLAVE_IZQ error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 PARENTESIS_DER error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA operaciones_validas1 error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional PUNTO_Y_COMA error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA operacion_relacional error
+                |   FOR PARENTESIS_IZQ inicializacion PUNTO_Y_COMA error
+                |   FOR PARENTESIS_IZQ inicializacion error
+                |   FOR PARENTESIS_IZQ error
+                |   FOR error
+                ;
+bloque::=   sentencia bloque
+        |   sentencia
+        |   COMENTARIOMULTILINEA bloque
+        |   COMENTARIOUNILINEA bloque
+        |   COMENTARIOMULTILINEA
+        |   COMENTARIOUNILINEA 
+        ;
+
+sentencia::=    operaciones PUNTO_Y_COMA
+            |   estructura_control
+            |   declaracion_variable
+            |   declaracion_constante
+
+            |   operaciones error
+            ;
+inicializacion::=   lista_tipo_entero operaciones_validas1 
+                |   lista_tipo_entero error
+                ;
